@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nuapps.ivping.PingController">
+    <top>
+        <MenuBar BorderPane.alignment="CENTER">
+            <Menu text="_Arquivo">
+                <MenuItem onAction="#doExit" text="Sai_r">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                    </accelerator>
+                </MenuItem>
+            </Menu>
+            <Menu text="_Ferramentas">
+                <MenuItem onAction="#runPing" text="_Ping">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                    </accelerator>
+                </MenuItem>
+                <MenuItem onAction="#openSSHSession" text="SS_H">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="H" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                    </accelerator>
+                </MenuItem>
+                <MenuItem onAction="#openTelnetSession" text="_Telnet">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="T" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                    </accelerator></MenuItem>
+            </Menu>
+            <Menu text="Aj_uda">
+                <MenuItem onAction="#showAboutDialog" text="_Sobre o Ivping..." />
+            </Menu>
+        </MenuBar>
+    </top>
+    <center>
+        <BorderPane BorderPane.alignment="CENTER">
+            <top>
+                <ToolBar prefHeight="40.0" BorderPane.alignment="CENTER">
+                    <BorderPane.margin>
+                        <Insets />
+                    </BorderPane.margin>
+                    <padding>
+                        <Insets left="12.0" />
+                    </padding>
+                    <Button mnemonicParsing="false" onAction="#runPing">
+                        <graphic>
+                            <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                <Image url="@../../../images/ping24.png" />
+                            </ImageView>
+                        </graphic>
+                        <tooltip>
+                            <Tooltip text="Ping (Ctrl+P)" />
+                        </tooltip></Button>
+                    <CheckBox fx:id="tCheckBox" mnemonicParsing="false" text="-t" />
+                    <Separator visible="false" />
+                    <Button mnemonicParsing="false" onAction="#openSSHSession">
+                        <graphic>
+                            <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                <Image url="@../../../images/browser24.png" />
+                            </ImageView>
+                        </graphic>
+                        <tooltip>
+                            <Tooltip text="SSH (Ctrl+H)" />
+                        </tooltip></Button>
+                    <Separator visible="false" />
+                    <TextField fx:id="searchTextField" prefWidth="250.0" promptText="Pesquisar" stylesheets="@MyTheme.css" />
+                    <Button mnemonicParsing="false" onAction="#clearTextField" style="-fx-background-color: transparent;">
+                        <graphic>
+                            <ImageView pickOnBounds="true" preserveRatio="true">
+                                <Image url="@../../../images/button_cancel.png" />
+                            </ImageView>
+                        </graphic>
+                        <padding>
+                            <Insets right="5.0" />
+                        </padding>
+                        <tooltip>
+                            <Tooltip text="Limpar" />
+                        </tooltip></Button>
+                    <Button mnemonicParsing="false" onAction="#showAdvancedFilterDialog">
+                        <tooltip>
+                            <Tooltip text="Filtro avançado" />
+                        </tooltip>
+                        <graphic>
+                            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                <Image url="@../../../images/Filter_Plus_16.png" />
+                            </ImageView>
+                        </graphic></Button>
+                    <Separator orientation="VERTICAL" />
+                    <HBox alignment="CENTER_LEFT" spacing="6.0">
+                        <Button mnemonicParsing="false" onAction="#openTmnWebsite" prefHeight="33.0" prefWidth="41.0"
+                                text="TMN" textAlignment="CENTER" textFill="#0336ff">
+                            <font>
+                                <Font name="System Bold" size="11.0"/>
+                            </font>
+                            <tooltip>
+                                <Tooltip text="TMN"/>
+                            </tooltip>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#openCiscoPrimeWebsite" prefHeight="33.0"
+                                prefWidth="41.0" text="CP">
+                            <tooltip>
+                                <Tooltip text="Cisco Prime"/>
+                            </tooltip>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#openZabbixWebsite" prefHeight="33.0" prefWidth="41.0"
+                                text="Zb">
+                            <tooltip>
+                                <Tooltip text="Zabbix"/>
+                            </tooltip>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#showPingAnyIpDialog" prefHeight="33.0"
+                                prefWidth="41.0" text="Ping">
+                            <tooltip>
+                                <Tooltip text="Executar ping em qualquer endereço IP"/>
+                            </tooltip>
+                        </Button>
+                    </HBox>
+                </ToolBar>
+            </top>
+            <center>
+                <TableView fx:id="tableView" editable="true" stylesheets="@MyTheme.css" BorderPane.alignment="CENTER">
+                    <columns>
+                        <TableColumn fx:id="hostNameTableColumn" prefWidth="166.3999908566475" text="Host Name" />
+                        <TableColumn fx:id="ipAddressTableColumn" prefWidth="168.00001525878906" text="IP Address" />
+                        <TableColumn fx:id="locationTableColumn" prefWidth="600.0" text="Device Location" />
+                    </columns>
+                </TableView>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>
