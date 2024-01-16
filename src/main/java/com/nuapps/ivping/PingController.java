@@ -23,17 +23,17 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.awt.*;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
 public class PingController {
     private static final String PING_N = "@ping -n 10 ";
     private static final String PING_T = "@ping -t ";
-
+    private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
     @FXML
     private TableView<RowData> tableView;
     @FXML
@@ -46,15 +46,11 @@ public class PingController {
     private CheckBox tCheckBox;
     @FXML
     private TextField searchTextField;
-
-    //private ObservableList<RowData> rowDataList;
-    private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
     private FilteredList<RowData> filteredData;
 
     @FXML
     private void initialize() {
         setupTableColumns();
-        //loadDataObservableList();
         loadExcelData();
         setupFiltering();
         setupCellFactories();
@@ -67,7 +63,7 @@ public class PingController {
         locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLocation()));
     }
 
-    private void loadExcelData() { // verificar/inserir if (Files.exists(path)) {
+    private void loadExcelData() {
         try {
             FileInputStream file = new FileInputStream("devices.xlsx");
             Workbook workbook = WorkbookFactory.create(file);
@@ -85,37 +81,18 @@ public class PingController {
                 String col3Value = row.getCell(2).getStringCellValue();
 
                 rowDataList.add(new RowData(col1Value, col2Value, col3Value));
-
                 tableView.setItems(rowDataList);
                 tableView.getSelectionModel().selectFirst();
                 tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
             }
-
             file.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            //showErrorDialog("File not found", "devices.xlsx does not exist");
+            showErrorDialog("File not found", Path.of("devices.xlsx") + " does not exist");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-
-//    private void loadDataObservableList() {
-//        Path path = Path.of("devices.xlsx");
-//
-//        if (Files.exists(path)) {
-//            try {
-//                //dataObservableList = FXCollections.observableArrayList(new ExcelReader().getHostsList());
-//                ExcelReader.excel();
-//                rowDataList = FXCollections.observableArrayList(ExcelReader.getHostsList());
-//                tableView.setItems(rowDataList);
-//                tableView.getSelectionModel().selectFirst();
-//                tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-//            } catch (IOException exception) {
-//                showErrorDialog("Error loading data", exception.getMessage());
-//            }
-//        } else {
-//            showErrorDialog("File not found", path + " does not exist");
-//        }
-//    }
 
     private void setupFiltering() {
         filteredData = new FilteredList<>(rowDataList, b -> true);
@@ -150,9 +127,43 @@ public class PingController {
     }
 
     @FXML
-    private void runPing() throws IOException {
-        String strParameters = (tCheckBox.isSelected() ? PING_T : PING_N);
-        PingDriver.ping(tableView, strParameters);
+    private void runPing() {
+        if (tableView.getSelectionModel().getSelectedIndex() >= 0) {
+            ObservableList<RowData> data = tableView.getSelectionModel().getSelectedItems();
+            try {
+                for (RowData rowData : data) {
+                    String hostName = rowData.getHostName();
+                    String pingCommand = (tCheckBox.isSelected() ? PING_T : PING_N) + rowData.getIpAddress();
+                    String ipAddress = rowData.getIpAddress();
+                    int lineNumber = data.indexOf(rowData);
+
+                    String env_temp = System.getenv("TEMP");
+                    String batFileName = env_temp + "/Iv3ping/ping" + lineNumber + ".bat";
+                    FileWriter bat = new FileWriter(batFileName);
+
+                    BufferedWriter bufferedWriter = new BufferedWriter(bat);
+                    bufferedWriter.write("@echo off");
+                    bufferedWriter.newLine();
+                    bufferedWriter.write("@cls");
+                    bufferedWriter.newLine();
+                    bufferedWriter.write("@color 17");
+                    bufferedWriter.newLine();
+                    bufferedWriter.write("@title Ping  " + hostName + "  [" + ipAddress + "]");
+                    bufferedWriter.newLine();
+                    bufferedWriter.write(pingCommand);
+                    bufferedWriter.newLine();
+                    bufferedWriter.write("@pause");
+                    bufferedWriter.close();
+                    bat.close();
+
+                    // Substituição do Runtime.getRuntime().exec() por ProcessBuilder
+                    ProcessBuilder processBuilder = new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName);
+                    processBuilder.start();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @FXML
@@ -290,7 +301,6 @@ public class PingController {
         try {
             // Carrega o arquivo FXML do diálogo "About"
             FXMLLoader loader = new FXMLLoader(getClass().getResource("aboutDialog.fxml"));
-            //Scene scene = new Scene(loader.load());
 
             // Cria um novo palco (Stage) para o diálogo
             Stage aboutStage = new Stage();
@@ -298,7 +308,6 @@ public class PingController {
             aboutStage.initModality(Modality.WINDOW_MODAL);
 
             // Define a cena no palco do diálogo
-            //aboutStage.setScene(scene);
             aboutStage.setScene(new Scene(loader.load()));
 
             aboutStage.setResizable(false);
