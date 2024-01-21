@@ -138,7 +138,7 @@ public class PingController {
                     int lineNumber = data.indexOf(rowData);
 
                     String env_temp = System.getenv("TEMP");
-                    String batFileName = env_temp + "/Iv3ping/ping" + lineNumber + ".bat";
+                    String batFileName = env_temp + "/Ivping/ping" + lineNumber + ".bat";
                     FileWriter bat = new FileWriter(batFileName);
 
                     BufferedWriter bufferedWriter = new BufferedWriter(bat);
@@ -302,7 +302,6 @@ public class PingController {
             // Carrega o arquivo FXML do diálogo "About"
             FXMLLoader loader = new FXMLLoader(getClass().getResource("aboutDialog.fxml"));
 
-            // Cria um novo palco (Stage) para o diálogo
             Stage aboutStage = new Stage();
             aboutStage.setTitle("Sobre o Ivping");
             aboutStage.initModality(Modality.WINDOW_MODAL);

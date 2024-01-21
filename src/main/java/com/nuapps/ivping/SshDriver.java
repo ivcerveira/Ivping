@@ -14,7 +14,7 @@ public class SshDriver {
         if (theTable.getSelectionModel().getSelectedIndex() >= 0) {
             ObservableList<RowData> data = theTable.getSelectionModel().getSelectedItems();
             if (data.size() == 1) {
-                String hostName = data.get(0).getHostName();  // novo - incluido RD0
+                String hostName = data.get(0).getHostName();
 
                 if (hostName.matches("^(SW\\d|RT\\d|RD\\d|NB0|NB1).*$")) {
                     String uriSsh = "https://s6006as3039.petrobras.biz/cgi-bin/ssh.sh?" + hostName;
