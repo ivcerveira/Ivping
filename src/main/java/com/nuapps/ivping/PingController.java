@@ -138,7 +138,7 @@ public class PingController {
                     int lineNumber = data.indexOf(rowData);
 
                     String env_temp = System.getenv("TEMP");
-                    String batFileName = env_temp + "/Ivping/ping" + lineNumber + ".bat";
+                    String batFileName = env_temp + "/ivping/ping" + lineNumber + ".bat";
                     FileWriter bat = new FileWriter(batFileName);
 
                     BufferedWriter bufferedWriter = new BufferedWriter(bat);
@@ -156,7 +156,6 @@ public class PingController {
                     bufferedWriter.close();
                     bat.close();
 
-                    // Substituição do Runtime.getRuntime().exec() por ProcessBuilder
                     ProcessBuilder processBuilder = new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName);
                     processBuilder.start();
                 }
@@ -286,7 +285,6 @@ public class PingController {
             Stage pingAnyIpDialogStage = new Stage();
             pingAnyIpDialogStage.setTitle("Digite o IP");
             pingAnyIpDialogStage.initModality(Modality.WINDOW_MODAL);
-
             pingAnyIpDialogStage.setScene(scene);
 
             pingAnyIpDialogStage.setResizable(false);

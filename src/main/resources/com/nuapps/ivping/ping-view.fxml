@@ -105,31 +105,27 @@
                         </graphic></Button>
                     <Separator orientation="VERTICAL" />
                     <HBox alignment="CENTER_LEFT" spacing="6.0">
-                        <Button mnemonicParsing="false" onAction="#openTmnWebsite" prefHeight="33.0" prefWidth="41.0"
-                                text="TMN" textAlignment="CENTER" textFill="#0336ff">
+                        <Button mnemonicParsing="false" onAction="#openTmnWebsite" prefHeight="33.0" prefWidth="41.0" text="TMN" textAlignment="CENTER" textFill="#0336ff">
                             <font>
-                                <Font name="System Bold" size="11.0"/>
+                                <Font name="System Bold" size="11.0" />
                             </font>
                             <tooltip>
-                                <Tooltip text="TMN"/>
+                                <Tooltip text="TMN" />
                             </tooltip>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#openCiscoPrimeWebsite" prefHeight="33.0"
-                                prefWidth="41.0" text="CP">
+                        <Button mnemonicParsing="false" onAction="#openCiscoPrimeWebsite" prefHeight="33.0" prefWidth="41.0" text="CP">
                             <tooltip>
-                                <Tooltip text="Cisco Prime"/>
+                                <Tooltip text="Cisco Prime" />
                             </tooltip>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#openZabbixWebsite" prefHeight="33.0" prefWidth="41.0"
-                                text="Zb">
+                        <Button mnemonicParsing="false" onAction="#openZabbixWebsite" prefHeight="33.0" prefWidth="41.0" text="Zb">
                             <tooltip>
-                                <Tooltip text="Zabbix"/>
+                                <Tooltip text="Zabbix" />
                             </tooltip>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#showPingAnyIpDialog" prefHeight="33.0"
-                                prefWidth="41.0" text="Ping">
+                        <Button mnemonicParsing="false" onAction="#showPingAnyIpDialog" prefHeight="33.0" prefWidth="41.0" text="Ping">
                             <tooltip>
-                                <Tooltip text="Executar ping em qualquer endereço IP"/>
+                                <Tooltip text="Pingar outro IP" />
                             </tooltip>
                         </Button>
                     </HBox>
