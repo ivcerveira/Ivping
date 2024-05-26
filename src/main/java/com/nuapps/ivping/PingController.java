@@ -1,13 +1,16 @@
+/**
+Varias alteracoes realizadas em 25-02-2024. Do PowerPing
+para o Ivping.
+Testado*/
+
 package com.nuapps.ivping;
 
 import com.nuapps.ivping.model.RowData;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -29,13 +32,15 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 
 public class PingController {
+    private static final Logger LOGGER = Logger.getLogger(PingController.class.getName());
     private static final String PING_N = "@ping -n 10 ";
     private static final String PING_T = "@ping -t ";
     private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
     @FXML
-    private TableView<RowData> tableView;
+    private TableView<RowData> tableView = new TableView<>();
     @FXML
     private TableColumn<RowData, String> hostNameTableColumn;
     @FXML
@@ -52,9 +57,15 @@ public class PingController {
     private void initialize() {
         setupTableColumns();
         loadExcelData();
-        setupFiltering();
+        setupSearchFilter();
         setupCellFactories();
-        setupListeners();
+    }
+
+    private void setupCellFactories() { // novo - torna a celula editavel para copiar o conteudo
+        hostNameTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        hostNameTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setHostName(t.getNewValue()));
+        ipAddressTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        ipAddressTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setIpAddress(t.getNewValue()));
     }
 
     private void setupTableColumns() {
@@ -67,59 +78,52 @@ public class PingController {
         try {
             FileInputStream file = new FileInputStream("devices.xlsx");
             Workbook workbook = WorkbookFactory.create(file);
-            Sheet sheet = workbook.getSheetAt(0); // Assumindo que os dados estão na primeira planilha
-
+            Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
             rowIterator.next();
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-
-                // Lendo os dados da planilha e adicionando à lista
                 String col1Value = row.getCell(0).getStringCellValue();
                 String col2Value = row.getCell(1).getStringCellValue();
                 String col3Value = row.getCell(2).getStringCellValue();
-
                 rowDataList.add(new RowData(col1Value, col2Value, col3Value));
-                tableView.setItems(rowDataList);
-                tableView.getSelectionModel().selectFirst();
-                tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             }
+            tableView.setItems(rowDataList);
+            tableView.getSelectionModel().selectFirst();
+            tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            workbook.close();
             file.close();
+
+            // Modificação para utilizar FilteredList
+            filteredData = new FilteredList<>(rowDataList, p -> true); // Inicializa o FilteredList
+            tableView.setItems(filteredData); // Define o FilteredList como itens da TableView
         } catch (FileNotFoundException e) {
-            //showErrorDialog("File not found", "devices.xlsx does not exist");
-            showErrorDialog("File not found", Path.of("devices.xlsx") + " does not exist");
+            showErrorDialog("Error loading data", Path.of("devices.xlsx") + " does not exist");
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void setupFiltering() {
-        filteredData = new FilteredList<>(rowDataList, b -> true);
-        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(host -> {
+    private void setupSearchFilter() {
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(rowData -> {
+            // Se o texto do filtro estiver vazio, mostra todos os dados.
             if (newValue == null || newValue.isEmpty()) {
                 return true;
             }
+
+            // Compara o nome do host, endereço IP e localização de cada rowData com o texto do filtro.
             String lowerCaseFilter = newValue.toLowerCase();
-            return host.getHostName().toLowerCase().contains(lowerCaseFilter)
-                    || host.getIpAddress().toLowerCase().contains(lowerCaseFilter)
-                    || host.getLocation().toLowerCase().contains(lowerCaseFilter);
+
+            if (rowData.getHostName().toLowerCase().contains(lowerCaseFilter)) {
+                return true; // Filtro corresponde ao nome do host.
+            } else if (rowData.getIpAddress().toLowerCase().contains(lowerCaseFilter)) {
+                return true; // Filtro corresponde ao endereço IP.
+            } else
+                return rowData.getLocation().toLowerCase().contains(lowerCaseFilter); // Filtro corresponde à localização.
+
         }));
-    }
-
-    private void setupCellFactories() {
-        hostNameTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        hostNameTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setHostName(t.getNewValue()));
-        ipAddressTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        ipAddressTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setIpAddress(t.getNewValue()));
-    }
-
-    private void setupListeners() {
-        filteredData.addListener((ListChangeListener<RowData>) change -> {
-            SortedList<RowData> sortedData = new SortedList<>(filteredData);
-            sortedData.comparatorProperty().bind(tableView.comparatorProperty());
-            tableView.setItems(sortedData);
-        });
     }
 
     public void doExit() {
@@ -127,42 +131,48 @@ public class PingController {
     }
 
     @FXML
-    private void runPing() {
-        if (tableView.getSelectionModel().getSelectedIndex() >= 0) {
-            ObservableList<RowData> data = tableView.getSelectionModel().getSelectedItems();
-            try {
-                for (RowData rowData : data) {
-                    String hostName = rowData.getHostName();
-                    String pingCommand = (tCheckBox.isSelected() ? PING_T : PING_N) + rowData.getIpAddress();
-                    String ipAddress = rowData.getIpAddress();
-                    int lineNumber = data.indexOf(rowData);
+    private void pingSelectedHost() {
+        ObservableList<RowData> selectedRowData = tableView.getSelectionModel().getSelectedItems();
 
-                    String env_temp = System.getenv("TEMP");
-                    String batFileName = env_temp + "/ivping/ping" + lineNumber + ".bat";
-                    FileWriter bat = new FileWriter(batFileName);
-
-                    BufferedWriter bufferedWriter = new BufferedWriter(bat);
-                    bufferedWriter.write("@echo off");
-                    bufferedWriter.newLine();
-                    bufferedWriter.write("@cls");
-                    bufferedWriter.newLine();
-                    bufferedWriter.write("@color 17");
-                    bufferedWriter.newLine();
-                    bufferedWriter.write("@title Ping  " + hostName + "  [" + ipAddress + "]");
-                    bufferedWriter.newLine();
-                    bufferedWriter.write(pingCommand);
-                    bufferedWriter.newLine();
-                    bufferedWriter.write("@pause");
-                    bufferedWriter.close();
-                    bat.close();
-
-                    ProcessBuilder processBuilder = new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName);
-                    processBuilder.start();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        if (!selectedRowData.isEmpty()) {
+            selectedRowData.forEach(this::processRowData);
         }
+    }
+
+    private void processRowData(RowData rowData) {
+        String hostName = rowData.getHostName();
+        String ipAddress = rowData.getIpAddress();
+        int lineNumber = tableView.getSelectionModel().getSelectedItems().indexOf(rowData);
+        String pingCommand = (tCheckBox.isSelected() ? PING_T : PING_N) + ipAddress;
+
+        try {
+            String batFileName = createBatchFile(hostName, ipAddress, lineNumber, pingCommand);
+            executeBatchFile(batFileName);
+        } catch (IOException e) {
+            LOGGER.severe("Error processing row data: " + e.getMessage());
+        }
+    }
+
+    private String createBatchFile(String hostName, String ipAddress, int lineNumber, String pingCommand) throws IOException {
+        String tempDir = System.getenv("TEMP");
+        if (tempDir == null) {
+            throw new IllegalStateException("TEMP directory not found");
+        }
+
+        String batFileName = tempDir + "/ivping/ping" + lineNumber + ".bat";
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(batFileName))) {
+            bufferedWriter.write("@echo off\n");
+            bufferedWriter.write("@cls\n");
+            bufferedWriter.write("@color 17\n");
+            bufferedWriter.write("@title Ping  " + hostName + "  [" + ipAddress + "]\n");
+            bufferedWriter.write(pingCommand + "\n");
+            bufferedWriter.write("@pause\n");
+        }
+        return batFileName;
+    }
+
+    private void executeBatchFile(String batFileName) throws IOException {
+        new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName).start();
     }
 
     @FXML
@@ -213,21 +223,22 @@ public class PingController {
     }
 
     @FXML
-    private void showAdvancedFilterDialog() {
+    private void showSearchMoreOptionsDialog() {
         try {
             searchTextField.clear();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("advancedFilterDialog.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("searchMoreOptionsDialog.fxml"));
             AnchorPane page = loader.load();
-            Scene scene2 = new Scene(page);
+            Scene scene = new Scene(page);
 
-            Stage advancedFilterDialogStage = new Stage();
-            advancedFilterDialogStage.setTitle("Mostrar linhas que:");
-            advancedFilterDialogStage.initModality(Modality.WINDOW_MODAL);
-            advancedFilterDialogStage.setScene(scene2);
-            AdvancedFilterDialogController ctrl = loader.getController();
-            ctrl.setDialogStage(advancedFilterDialogStage);
-            advancedFilterDialogStage.setResizable(false);
-            advancedFilterDialogStage.showAndWait();
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Mostrar linhas que:");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.setScene(scene);
+            SearchMoreOptionsDialogController ctrl = loader.getController();
+            ctrl.setSearchMoreOptionsDialogStage(dialogStage);
+
+            dialogStage.setResizable(false);
+            dialogStage.showAndWait();
 
             if (ctrl.isOkClicked()) {
                 applyFilter(ctrl.getStringSearchField1(), ctrl.getStringSearchField2(),

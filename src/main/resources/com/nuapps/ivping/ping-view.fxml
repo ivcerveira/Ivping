@@ -30,7 +30,7 @@
                 </MenuItem>
             </Menu>
             <Menu text="_Ferramentas">
-                <MenuItem onAction="#runPing" text="_Ping">
+                <MenuItem onAction="#pingSelectedHost" text="_Ping">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="P" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>
@@ -60,7 +60,7 @@
                     <padding>
                         <Insets left="12.0" />
                     </padding>
-                    <Button mnemonicParsing="false" onAction="#runPing">
+                    <Button mnemonicParsing="false" onAction="#pingSelectedHost">
                         <graphic>
                             <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                 <Image url="@../../../images/ping24.png" />
@@ -94,9 +94,9 @@
                         <tooltip>
                             <Tooltip text="Limpar" />
                         </tooltip></Button>
-                    <Button mnemonicParsing="false" onAction="#showAdvancedFilterDialog">
+                    <Button mnemonicParsing="false" onAction="#showSearchMoreOptionsDialog">
                         <tooltip>
-                            <Tooltip text="Filtro avançado" />
+                            <Tooltip text="Pesquisa - Mais opções" />
                         </tooltip>
                         <graphic>
                             <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">

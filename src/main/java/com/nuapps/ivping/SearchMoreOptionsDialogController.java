@@ -5,7 +5,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class AdvancedFilterDialogController {
+public class SearchMoreOptionsDialogController {
     @FXML
     private TextField searchField1TextField;
     @FXML
@@ -13,7 +13,7 @@ public class AdvancedFilterDialogController {
     @FXML
     private ComboBox<String> andOrComboBox;
 
-    private Stage advancedFilterDialogStage;
+    private Stage searchMoreOptionsDialogStage;
     private boolean okClicked = false;
     private boolean cancelClicked = false;
     private String stringSearchField1 = "";
@@ -26,8 +26,8 @@ public class AdvancedFilterDialogController {
         andOrComboBox.getSelectionModel().select(0);
     }
 
-    public void setDialogStage(Stage advancedFilterDialogStage) {
-        this.advancedFilterDialogStage = advancedFilterDialogStage;
+    public void setSearchMoreOptionsDialogStage(Stage searchMoreOptionsDialogStage) {
+        this.searchMoreOptionsDialogStage = searchMoreOptionsDialogStage;
     }
 
     public boolean isOkClicked() {
@@ -55,7 +55,7 @@ public class AdvancedFilterDialogController {
         if (isInputValid()) {
             stringSearchField1 = searchField1TextField.getText();
             stringSearchField2 = searchField2TextField.getText();
-            advancedFilterDialogStage.close();
+            searchMoreOptionsDialogStage.close();
             okClicked = true;
         }
     }
@@ -69,7 +69,7 @@ public class AdvancedFilterDialogController {
 
     @FXML
     private void handleCancel() {
-        advancedFilterDialogStage.close();
+        searchMoreOptionsDialogStage.close();
         cancelClicked = true;
     }
 
