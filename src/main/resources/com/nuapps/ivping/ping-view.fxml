@@ -85,7 +85,7 @@
                     <Button mnemonicParsing="false" onAction="#clearTextField" style="-fx-background-color: transparent;">
                         <graphic>
                             <ImageView pickOnBounds="true" preserveRatio="true">
-                                <Image url="@../../../images/button_cancel.png" />
+                                <Image url="@../../../images/1564505_icon.png" />
                             </ImageView>
                         </graphic>
                         <padding>

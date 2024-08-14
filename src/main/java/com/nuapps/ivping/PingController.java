@@ -95,7 +95,6 @@ public class PingController {
             workbook.close();
             file.close();
 
-            // Modificação para utilizar FilteredList
             filteredData = new FilteredList<>(rowDataList, p -> true); // Inicializa o FilteredList
             tableView.setItems(filteredData); // Define o FilteredList como itens da TableView
         } catch (FileNotFoundException e) {
@@ -190,7 +189,6 @@ public class PingController {
         String url = "http://tms.petrobras.com.br";
         String firefoxPath = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 
-        // Constrói o comando para abrir o Chrome com a URL
         String[] command = {firefoxPath, url};
 
         // Inicia o processo
