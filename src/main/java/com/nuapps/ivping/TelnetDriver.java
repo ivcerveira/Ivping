@@ -14,7 +14,7 @@ public class TelnetDriver {
         if (theTable.getSelectionModel().getSelectedIndex() >= 0) {
             ObservableList<RowData> data = theTable.getSelectionModel().getSelectedItems();
             if (data.size() == 1) {
-                String hostName = data.get(0).getHostName();
+                String hostName = data.get(0).hostName();
 
                 if (hostName.matches("^(SW\\d|RT\\d|NB0|NB1).*$")) {
                     String uriTelnet = "https://s6006as3039.petrobras.biz/cgi-bin/telnet.sh?" + hostName;

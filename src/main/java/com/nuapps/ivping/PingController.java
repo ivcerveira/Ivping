@@ -58,20 +58,21 @@ public class PingController {
         setupTableColumns();
         loadExcelData();
         setupSearchFilter();
-        setupCellFactories();
+        //setupCellFactories();
     }
 
-    private void setupCellFactories() { // novo - torna a celula editavel para copiar o conteudo
-        hostNameTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        hostNameTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setHostName(t.getNewValue()));
-        ipAddressTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        ipAddressTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setIpAddress(t.getNewValue()));
-    }
+//    private void setupCellFactories() { // novo - torna a celula editavel para copiar o conteudo
+//        hostNameTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+//        hostNameTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setHostName(t.getNewValue()));
+//        ipAddressTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+//        ipAddressTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setIpAddress(t.getNewValue()));
+//    }
 
     private void setupTableColumns() {
-        hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHostName()));
-        ipAddressTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getIpAddress()));
-        locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLocation()));
+        //hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHostName()));
+        hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().hostName()));
+        ipAddressTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
+        locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
     }
 
     private void loadExcelData() {
@@ -115,12 +116,12 @@ public class PingController {
             // Compara o nome do host, endereço IP e localização de cada rowData com o texto do filtro.
             String lowerCaseFilter = newValue.toLowerCase();
 
-            if (rowData.getHostName().toLowerCase().contains(lowerCaseFilter)) {
+            if (rowData.hostName().toLowerCase().contains(lowerCaseFilter)) {
                 return true; // Filtro corresponde ao nome do host.
-            } else if (rowData.getIpAddress().toLowerCase().contains(lowerCaseFilter)) {
+            } else if (rowData.ipAddress().toLowerCase().contains(lowerCaseFilter)) {
                 return true; // Filtro corresponde ao endereço IP.
             } else
-                return rowData.getLocation().toLowerCase().contains(lowerCaseFilter); // Filtro corresponde à localização.
+                return rowData.location().toLowerCase().contains(lowerCaseFilter); // Filtro corresponde à localização.
 
         }));
     }
@@ -139,8 +140,8 @@ public class PingController {
     }
 
     private void processRowData(RowData rowData) {
-        String hostName = rowData.getHostName();
-        String ipAddress = rowData.getIpAddress();
+        String hostName = rowData.hostName();
+        String ipAddress = rowData.ipAddress();
         int lineNumber = tableView.getSelectionModel().getSelectedItems().indexOf(rowData);
         String pingCommand = (tCheckBox.isSelected() ? PING_T : PING_N) + ipAddress;
 
@@ -255,9 +256,9 @@ public class PingController {
                 return true;
             }
             String lowerCaseFilter = aux1.toLowerCase();
-            return host.getHostName().toLowerCase().contains(lowerCaseFilter)
-                    || host.getIpAddress().toLowerCase().contains(lowerCaseFilter)
-                    || host.getLocation().toLowerCase().contains(lowerCaseFilter);
+            return host.hostName().toLowerCase().contains(lowerCaseFilter)
+                    || host.ipAddress().toLowerCase().contains(lowerCaseFilter)
+                    || host.location().toLowerCase().contains(lowerCaseFilter);
         };
 
         Predicate<RowData> p2 = host -> {
@@ -265,9 +266,9 @@ public class PingController {
                 return true;
             }
             String lowerCaseFilter = aux2.toLowerCase();
-            return host.getHostName().toLowerCase().contains(lowerCaseFilter)
-                    || host.getIpAddress().toLowerCase().contains(lowerCaseFilter)
-                    || host.getLocation().toLowerCase().contains(lowerCaseFilter);
+            return host.hostName().toLowerCase().contains(lowerCaseFilter)
+                    || host.ipAddress().toLowerCase().contains(lowerCaseFilter)
+                    || host.location().toLowerCase().contains(lowerCaseFilter);
         };
 
         if (selectedItem.equals("E")) {
