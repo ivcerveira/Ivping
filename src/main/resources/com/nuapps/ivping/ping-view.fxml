@@ -92,7 +92,7 @@
                             <Insets right="5.0" />
                         </padding>
                         <tooltip>
-                            <Tooltip text="Limpar" />
+                            <Tooltip text="Limpar pesquisa" />
                         </tooltip></Button>
                     <Button mnemonicParsing="false" onAction="#showSearchMoreOptionsDialog">
                         <tooltip>
@@ -105,28 +105,37 @@
                         </graphic></Button>
                     <Separator orientation="VERTICAL" />
                     <HBox alignment="CENTER_LEFT" spacing="6.0">
-                        <Button mnemonicParsing="false" onAction="#openTmnWebsite" prefHeight="33.0" prefWidth="41.0" text="TMN" textAlignment="CENTER" textFill="#0336ff">
-                            <font>
-                                <Font name="System Bold" size="11.0" />
-                            </font>
+                        <Button mnemonicParsing="false" onAction="#openTmnWebsite" text="TMN" textAlignment="CENTER">
                             <tooltip>
                                 <Tooltip text="TMN" />
                             </tooltip>
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#openCiscoPrimeWebsite" prefHeight="33.0" prefWidth="41.0" text="CP">
+                        <Button mnemonicParsing="false" onAction="#openCiscoPrimeWebsite" text="Cisco Prime">
                             <tooltip>
                                 <Tooltip text="Cisco Prime" />
                             </tooltip>
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#openZabbixWebsite" prefHeight="33.0" prefWidth="41.0" text="Zb">
+                        <Button mnemonicParsing="false" onAction="#openZabbixWebsite" text="Zabbix">
                             <tooltip>
                                 <Tooltip text="Zabbix" />
                             </tooltip>
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#showPingAnyIpDialog" prefHeight="33.0" prefWidth="41.0" text="Ping">
+                        <Button mnemonicParsing="false" onAction="#showPingAnyIpDialog" text="Ping">
                             <tooltip>
                                 <Tooltip text="Pingar outro IP" />
                             </tooltip>
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
                         </Button>
                     </HBox>
                 </ToolBar>

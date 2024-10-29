@@ -1,7 +1,7 @@
 /**
-Varias alteracoes realizadas em 25-02-2024. Do PowerPing
-para o Ivping.
-Testado*/
+Em 03-09-2024:
+Classe RowData migrada para Record
+*/
 
 package com.nuapps.ivping;
 
@@ -16,7 +16,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -38,6 +37,8 @@ public class PingController {
     private static final Logger LOGGER = Logger.getLogger(PingController.class.getName());
     private static final String PING_N = "@ping -n 10 ";
     private static final String PING_T = "@ping -t ";
+    private static final String FIREFOX_PATH = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
+
     private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
     @FXML
     private TableView<RowData> tableView = new TableView<>();
@@ -58,18 +59,9 @@ public class PingController {
         setupTableColumns();
         loadExcelData();
         setupSearchFilter();
-        //setupCellFactories();
     }
 
-//    private void setupCellFactories() { // novo - torna a celula editavel para copiar o conteudo
-//        hostNameTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-//        hostNameTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setHostName(t.getNewValue()));
-//        ipAddressTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-//        ipAddressTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setIpAddress(t.getNewValue()));
-//    }
-
     private void setupTableColumns() {
-        //hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHostName()));
         hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().hostName()));
         ipAddressTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
         locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
@@ -188,9 +180,7 @@ public class PingController {
     @FXML
     private void openTmnWebsite() throws IOException {
         String url = "http://tms.petrobras.com.br";
-        String firefoxPath = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
-
-        String[] command = {firefoxPath, url};
+        String[] command = {FIREFOX_PATH, url};
 
         // Inicia o processo
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -200,10 +190,9 @@ public class PingController {
     @FXML
     private void openCiscoPrimeWebsite() throws IOException {
         String url = "https://ciscoprime.net.petrobras.com.br";
-        String firefoxPath = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 
         // Constrói o comando para abrir o Firefox com a URL
-        String[] command = {firefoxPath, url};
+        String[] command = {FIREFOX_PATH, url};
 
         // Inicia o processo
         ProcessBuilder processBuilder = new ProcessBuilder(command);
