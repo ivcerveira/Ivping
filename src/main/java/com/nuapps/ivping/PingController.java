@@ -1,7 +1,7 @@
 /**
-Varias alteracoes realizadas em 25-02-2024. Do PowerPing
-para o Ivping.
-Testado*/
+ * Em 03-09-2024:
+ * Classe RowData migrada para Record
+ */
 
 package com.nuapps.ivping;
 
@@ -16,7 +16,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -26,21 +25,22 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.awt.*;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 
 public class PingController {
-    private static final Logger LOGGER = Logger.getLogger(PingController.class.getName());
-    private static final String PING_N = "@ping -n 10 ";
-    private static final String PING_T = "@ping -t ";
+    private static final String FIREFOX_PATH = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
+
     private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
     @FXML
-    private TableView<RowData> tableView = new TableView<>();
+    //private TableView<RowData> tableView = new TableView<>();
+    private TableView<RowData> tableView;
     @FXML
     private TableColumn<RowData, String> hostNameTableColumn;
     @FXML
@@ -58,18 +58,9 @@ public class PingController {
         setupTableColumns();
         loadExcelData();
         setupSearchFilter();
-        //setupCellFactories();
     }
 
-//    private void setupCellFactories() { // novo - torna a celula editavel para copiar o conteudo
-//        hostNameTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-//        hostNameTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setHostName(t.getNewValue()));
-//        ipAddressTableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-//        ipAddressTableColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setIpAddress(t.getNewValue()));
-//    }
-
     private void setupTableColumns() {
-        //hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHostName()));
         hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().hostName()));
         ipAddressTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
         locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
@@ -135,44 +126,9 @@ public class PingController {
         ObservableList<RowData> selectedRowData = tableView.getSelectionModel().getSelectedItems();
 
         if (!selectedRowData.isEmpty()) {
-            selectedRowData.forEach(this::processRowData);
+            boolean continuous = tCheckBox.isSelected();
+            selectedRowData.forEach(rowData -> PingHelper.processRowData(rowData, continuous, tableView));
         }
-    }
-
-    private void processRowData(RowData rowData) {
-        String hostName = rowData.hostName();
-        String ipAddress = rowData.ipAddress();
-        int lineNumber = tableView.getSelectionModel().getSelectedItems().indexOf(rowData);
-        String pingCommand = (tCheckBox.isSelected() ? PING_T : PING_N) + ipAddress;
-
-        try {
-            String batFileName = createBatchFile(hostName, ipAddress, lineNumber, pingCommand);
-            executeBatchFile(batFileName);
-        } catch (IOException e) {
-            LOGGER.severe("Error processing row data: " + e.getMessage());
-        }
-    }
-
-    private String createBatchFile(String hostName, String ipAddress, int lineNumber, String pingCommand) throws IOException {
-        String tempDir = System.getenv("TEMP");
-        if (tempDir == null) {
-            throw new IllegalStateException("TEMP directory not found");
-        }
-
-        String batFileName = tempDir + "/ivping/ping" + lineNumber + ".bat";
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(batFileName))) {
-            bufferedWriter.write("@echo off\n");
-            bufferedWriter.write("@cls\n");
-            bufferedWriter.write("@color 17\n");
-            bufferedWriter.write("@title Ping  " + hostName + "  [" + ipAddress + "]\n");
-            bufferedWriter.write(pingCommand + "\n");
-            bufferedWriter.write("@pause\n");
-        }
-        return batFileName;
-    }
-
-    private void executeBatchFile(String batFileName) throws IOException {
-        new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName).start();
     }
 
     @FXML
@@ -188,9 +144,7 @@ public class PingController {
     @FXML
     private void openTmnWebsite() throws IOException {
         String url = "http://tms.petrobras.com.br";
-        String firefoxPath = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
-
-        String[] command = {firefoxPath, url};
+        String[] command = {FIREFOX_PATH, url};
 
         // Inicia o processo
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -200,10 +154,9 @@ public class PingController {
     @FXML
     private void openCiscoPrimeWebsite() throws IOException {
         String url = "https://ciscoprime.net.petrobras.com.br";
-        String firefoxPath = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
 
         // Constrói o comando para abrir o Firefox com a URL
-        String[] command = {firefoxPath, url};
+        String[] command = {FIREFOX_PATH, url};
 
         // Inicia o processo
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -240,8 +193,7 @@ public class PingController {
             dialogStage.showAndWait();
 
             if (ctrl.isOkClicked()) {
-                applyFilter(ctrl.getStringSearchField1(), ctrl.getStringSearchField2(),
-                        ctrl.getAndOrComboBox().getSelectionModel().getSelectedItem());
+                applyFilter(ctrl.getStringSearchField1(), ctrl.getStringSearchField2(), ctrl.getAndOrComboBox().getSelectionModel().getSelectedItem());
             }
             if (ctrl.isCancelClicked()) cancelClicked();
         } catch (IOException exception) {
@@ -256,9 +208,7 @@ public class PingController {
                 return true;
             }
             String lowerCaseFilter = aux1.toLowerCase();
-            return host.hostName().toLowerCase().contains(lowerCaseFilter)
-                    || host.ipAddress().toLowerCase().contains(lowerCaseFilter)
-                    || host.location().toLowerCase().contains(lowerCaseFilter);
+            return host.hostName().toLowerCase().contains(lowerCaseFilter) || host.ipAddress().toLowerCase().contains(lowerCaseFilter) || host.location().toLowerCase().contains(lowerCaseFilter);
         };
 
         Predicate<RowData> p2 = host -> {
@@ -266,9 +216,7 @@ public class PingController {
                 return true;
             }
             String lowerCaseFilter = aux2.toLowerCase();
-            return host.hostName().toLowerCase().contains(lowerCaseFilter)
-                    || host.ipAddress().toLowerCase().contains(lowerCaseFilter)
-                    || host.location().toLowerCase().contains(lowerCaseFilter);
+            return host.hostName().toLowerCase().contains(lowerCaseFilter) || host.ipAddress().toLowerCase().contains(lowerCaseFilter) || host.location().toLowerCase().contains(lowerCaseFilter);
         };
 
         if (selectedItem.equals("E")) {

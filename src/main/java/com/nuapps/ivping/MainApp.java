@@ -10,12 +10,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
-public class PingApplication extends Application {
+public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ivp_icon.png"))));
 
-        FXMLLoader fxmlLoader = new FXMLLoader(PingApplication.class.getResource("ping-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ping-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 522);
 
         boolean wasSuccessful = new File(System.getenv("TEMP") + "/ivping").mkdir();
