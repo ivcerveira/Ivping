@@ -59,10 +59,7 @@ public class PingAnyIpDialogController {
 
     @FXML
     private void handleCancelButtonClick() {
-        // Obtém a referência ao palco (Stage) atual do diálogo
         Stage stage = (Stage) cancelButton.getScene().getWindow();
-
-        // Fecha o palco (diálogo)
         stage.close();
     }
 }

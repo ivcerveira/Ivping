@@ -1,8 +1,3 @@
-/**
- * Em 03-09-2024:
- * Classe RowData migrada para Record
- */
-
 package com.nuapps.ivping;
 
 import com.nuapps.ivping.model.RowData;
@@ -39,7 +34,6 @@ public class PingController {
 
     private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
     @FXML
-    //private TableView<RowData> tableView = new TableView<>();
     private TableView<RowData> tableView;
     @FXML
     private TableColumn<RowData, String> hostNameTableColumn;
@@ -64,6 +58,18 @@ public class PingController {
         hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().hostName()));
         ipAddressTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
         locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
+
+        hostNameTableColumn.setPrefWidth(150);
+        ipAddressTableColumn.setPrefWidth(150);
+
+        // Configura a terceira coluna para ocupar o restante da largura
+        tableView.widthProperty().addListener((_, _, newWidth) -> {
+            double tableWidth = newWidth.doubleValue();
+            double remainingWidth = tableWidth - (hostNameTableColumn.getWidth() + ipAddressTableColumn.getWidth());
+            if (remainingWidth > 0) {
+                locationTableColumn.setPrefWidth(remainingWidth);
+            }
+        });
     }
 
     private void loadExcelData() {
@@ -87,8 +93,8 @@ public class PingController {
             workbook.close();
             file.close();
 
-            filteredData = new FilteredList<>(rowDataList, p -> true); // Inicializa o FilteredList
-            tableView.setItems(filteredData); // Define o FilteredList como itens da TableView
+            filteredData = new FilteredList<>(rowDataList, p -> true);
+            tableView.setItems(filteredData);
         } catch (FileNotFoundException e) {
             showErrorDialog("Error loading data", Path.of("devices.xlsx") + " does not exist");
 
@@ -99,21 +105,17 @@ public class PingController {
 
     private void setupSearchFilter() {
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(rowData -> {
-            // Se o texto do filtro estiver vazio, mostra todos os dados.
             if (newValue == null || newValue.isEmpty()) {
                 return true;
             }
-
-            // Compara o nome do host, endereço IP e localização de cada rowData com o texto do filtro.
             String lowerCaseFilter = newValue.toLowerCase();
 
             if (rowData.hostName().toLowerCase().contains(lowerCaseFilter)) {
-                return true; // Filtro corresponde ao nome do host.
+                return true;
             } else if (rowData.ipAddress().toLowerCase().contains(lowerCaseFilter)) {
-                return true; // Filtro corresponde ao endereço IP.
+                return true;
             } else
-                return rowData.location().toLowerCase().contains(lowerCaseFilter); // Filtro corresponde à localização.
-
+                return rowData.location().toLowerCase().contains(lowerCaseFilter);
         }));
     }
 
@@ -146,7 +148,6 @@ public class PingController {
         String url = "http://tms.petrobras.com.br";
         String[] command = {FIREFOX_PATH, url};
 
-        // Inicia o processo
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.start();
     }
@@ -154,11 +155,8 @@ public class PingController {
     @FXML
     private void openCiscoPrimeWebsite() throws IOException {
         String url = "https://ciscoprime.net.petrobras.com.br";
-
-        // Constrói o comando para abrir o Firefox com a URL
         String[] command = {FIREFOX_PATH, url};
 
-        // Inicia o processo
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.start();
     }
@@ -255,16 +253,12 @@ public class PingController {
     @FXML
     private void showAboutDialog() {
         try {
-            // Carrega o arquivo FXML do diálogo "About"
             FXMLLoader loader = new FXMLLoader(getClass().getResource("aboutDialog.fxml"));
-
             Stage aboutStage = new Stage();
             aboutStage.setTitle("Sobre o Ivping");
             aboutStage.initModality(Modality.WINDOW_MODAL);
 
-            // Define a cena no palco do diálogo
             aboutStage.setScene(new Scene(loader.load()));
-
             aboutStage.setResizable(false);
             aboutStage.showAndWait();
         } catch (IOException exception) {

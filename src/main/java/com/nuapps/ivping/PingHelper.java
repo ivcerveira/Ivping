@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 @SuppressWarnings("rawtypes")
 public class PingHelper {
-    private static final Logger LOGGER = Logger.getLogger(PingController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PingHelper.class.getName());
     private static final String PING_N = "@ping -n 10 ";
     private static final String PING_T = "@ping -t ";
 
