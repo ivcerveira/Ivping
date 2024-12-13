@@ -10,10 +10,7 @@ public class AboutDialogController {
 
     @FXML
     private void handleOkButtonClick() {
-        // Obtém a referência ao palco (Stage) atual do diálogo
         Stage stage = (Stage) okButton.getScene().getWindow();
-
-        // Fecha o palco (diálogo)
         stage.close();
     }
 }
