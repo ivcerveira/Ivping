@@ -59,11 +59,11 @@ public class PingController {
         ipAddressTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
         locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
 
-        hostNameTableColumn.setPrefWidth(150);
+        hostNameTableColumn.setPrefWidth(170);
         ipAddressTableColumn.setPrefWidth(150);
 
         // Configura a terceira coluna para ocupar o restante da largura
-        tableView.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+        tableView.widthProperty().addListener((observable, oldValue, newWidth) -> {
             double tableWidth = newWidth.doubleValue();
             double remainingWidth = tableWidth - (hostNameTableColumn.getWidth() + ipAddressTableColumn.getWidth());
             if (remainingWidth > 0) {
@@ -82,9 +82,31 @@ public class PingController {
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                String col1Value = row.getCell(0).getStringCellValue();
-                String col2Value = row.getCell(1).getStringCellValue();
-                String col3Value = row.getCell(2).getStringCellValue();
+                String col1Value;
+                String col2Value;
+                String col3Value;
+
+                try {
+                    col1Value = row.getCell(0).getStringCellValue();
+                } catch (NullPointerException e) {
+                    System.out.println(e.getMessage());
+                    col1Value = "";
+                }
+
+                try {
+                    col2Value = row.getCell(1).getStringCellValue();
+                } catch (NullPointerException e) {
+                    System.out.println(e.getMessage());
+                    col2Value = "";
+                }
+
+                try {
+                    col3Value = row.getCell(2).getStringCellValue();
+                } catch (NullPointerException e) {
+                    System.out.println(e.getMessage());
+                    col3Value = "";
+                }
+
                 rowDataList.add(new RowData(col1Value, col2Value, col3Value));
             }
             tableView.setItems(rowDataList);

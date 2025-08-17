@@ -134,6 +134,7 @@
                         <Font name="System Bold" size="12.0" />
                      </font>
                   </Button>
+                  <Separator orientation="VERTICAL" />
                         <Button mnemonicParsing="false" onAction="#showPingAnyIpDialog" text="Ping">
                             <tooltip>
                                 <Tooltip text="Pingar outro IP" />
