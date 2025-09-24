@@ -20,17 +20,21 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.awt.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
 public class PingController {
-    private static final String FIREFOX_PATH = "C:\\Program Files\\Mozilla Firefox\\firefox.exe";
+    private static final String FIREFOX_PATH = System.getenv("ProgramFiles") + "\\Mozilla Firefox\\firefox.exe";
+    private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Local\\Ivping";
+    private static final String EXCEL_FILE_NAME = "devices.xlsx";
+    private static final Path EXCEL_FILE_PATH = Paths.get(APP_FOLDER, EXCEL_FILE_NAME);
 
     private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
     @FXML
@@ -50,8 +54,39 @@ public class PingController {
     @FXML
     private void initialize() {
         setupTableColumns();
+        ensureExcelFileExists();   // 🔹 garante que o arquivo exista antes de carregar
         loadExcelData();
         setupSearchFilter();
+    }
+
+    /**
+     * Garante que a pasta AppData\Local\Ivping e o arquivo devices.xlsx existam.
+     * Caso contrário, cria/copiar de um modelo.
+     */
+    private void ensureExcelFileExists() {
+        try {
+            // cria pasta se não existir
+            Files.createDirectories(Paths.get(APP_FOLDER));
+
+            if (!Files.exists(EXCEL_FILE_PATH)) {
+                // 🔹 Copia o modelo da pasta resources
+                try (InputStream defaultFile = getClass().getResourceAsStream("/devices.xlsx")) {
+                    if (defaultFile != null) {
+                        Files.copy(defaultFile, EXCEL_FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        // Se o arquivo não for encontrado nos resources, cria um novo vazio
+                        try (Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
+                            workbook.createSheet("Devices");
+                            try (FileOutputStream out = new FileOutputStream(EXCEL_FILE_PATH.toFile())) {
+                                workbook.write(out);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            showErrorDialog("Erro ao preparar arquivo", e.getMessage());
+        }
     }
 
     private void setupTableColumns() {
@@ -72,56 +107,47 @@ public class PingController {
         });
     }
 
+    /**
+     * Carrega os dados do Excel na tabela.
+     */
     private void loadExcelData() {
-        try {
-            FileInputStream file = new FileInputStream("devices.xlsx");
-            Workbook workbook = WorkbookFactory.create(file);
+        try (FileInputStream file = new FileInputStream(EXCEL_FILE_PATH.toFile());
+             Workbook workbook = WorkbookFactory.create(file)) {
+
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
-            rowIterator.next();
 
+            if (rowIterator.hasNext()) {
+                rowIterator.next(); // pula cabeçalho
+            }
+
+            rowDataList.clear();
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                String col1Value;
-                String col2Value;
-                String col3Value;
-
-                try {
-                    col1Value = row.getCell(0).getStringCellValue();
-                } catch (NullPointerException e) {
-                    System.out.println(e.getMessage());
-                    col1Value = "";
-                }
-
-                try {
-                    col2Value = row.getCell(1).getStringCellValue();
-                } catch (NullPointerException e) {
-                    System.out.println(e.getMessage());
-                    col2Value = "";
-                }
-
-                try {
-                    col3Value = row.getCell(2).getStringCellValue();
-                } catch (NullPointerException e) {
-                    System.out.println(e.getMessage());
-                    col3Value = "";
-                }
+                String col1Value = getCellValue(row, 0);
+                String col2Value = getCellValue(row, 1);
+                String col3Value = getCellValue(row, 2);
 
                 rowDataList.add(new RowData(col1Value, col2Value, col3Value));
             }
-            tableView.setItems(rowDataList);
-            tableView.getSelectionModel().selectFirst();
-            tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            workbook.close();
-            file.close();
 
             filteredData = new FilteredList<>(rowDataList, p -> true);
             tableView.setItems(filteredData);
-        } catch (FileNotFoundException e) {
-            showErrorDialog("Error loading data", Path.of("devices.xlsx") + " does not exist");
+            tableView.getSelectionModel().selectFirst();
+            tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
+        } catch (FileNotFoundException e) {
+            showErrorDialog("Erro", EXCEL_FILE_PATH + " não existe.");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private String getCellValue(Row row, int index) {
+        try {
+            return row.getCell(index).getStringCellValue();
+        } catch (Exception e) {
+            return "";
         }
     }
 
