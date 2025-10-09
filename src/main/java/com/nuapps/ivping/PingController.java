@@ -9,8 +9,11 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -54,15 +57,12 @@ public class PingController {
     @FXML
     private void initialize() {
         setupTableColumns();
-        ensureExcelFileExists();   // 🔹 garante que o arquivo exista antes de carregar
+        ensureExcelFileExists();
         loadExcelData();
         setupSearchFilter();
+        setupContextMenu(); // 👈 adiciona o menu de contexto
     }
 
-    /**
-     * Garante que a pasta AppData\Local\Ivping e o arquivo devices.xlsx existam.
-     * Caso contrário, cria/copiar de um modelo.
-     */
     private void ensureExcelFileExists() {
         try {
             // cria pasta se não existir
@@ -107,18 +107,14 @@ public class PingController {
         });
     }
 
-    /**
-     * Carrega os dados do Excel na tabela.
-     */
     private void loadExcelData() {
         try (FileInputStream file = new FileInputStream(EXCEL_FILE_PATH.toFile());
              Workbook workbook = WorkbookFactory.create(file)) {
-
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
 
             if (rowIterator.hasNext()) {
-                rowIterator.next(); // pula cabeçalho
+                rowIterator.next();
             }
 
             rowDataList.clear();
@@ -127,7 +123,6 @@ public class PingController {
                 String col1Value = getCellValue(row, 0);
                 String col2Value = getCellValue(row, 1);
                 String col3Value = getCellValue(row, 2);
-
                 rowDataList.add(new RowData(col1Value, col2Value, col3Value));
             }
 
@@ -325,5 +320,68 @@ public class PingController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void setupContextMenu() {
+        // Cria o menu de contexto
+        ContextMenu contextMenu = new ContextMenu();
+
+        contextMenu.getItems().addAll(
+                getCopyHostnameItem(),
+                getCopyIpItem(),
+                getCopyLocationItem()
+        );
+
+        // Aplica o menu em cada linha da TableView
+        tableView.setRowFactory(tv -> {
+            TableRow<RowData> row = new TableRow<>();
+            row.setOnContextMenuRequested(event -> {
+                if (!row.isEmpty()) {
+                    tableView.getSelectionModel().select(row.getIndex()); // garante que a linha clicada fique selecionada
+                    contextMenu.show(row, event.getScreenX(), event.getScreenY());
+                }
+            });
+            return row;
+        });
+    }
+
+    private MenuItem getCopyIpItem() {
+        MenuItem copyIpItem = new MenuItem("Copiar IP");
+        copyIpItem.setOnAction(event -> {
+            RowData selected = tableView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                copyToClipboard(selected.ipAddress());
+            }
+        });
+        return copyIpItem;
+    }
+
+    private MenuItem getCopyHostnameItem() {
+        MenuItem copyHostItem = new MenuItem("Copiar Hostname");
+        copyHostItem.setOnAction(event -> {
+            RowData selected = tableView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                copyToClipboard(selected.hostName());
+            }
+        });
+        return copyHostItem;
+    }
+
+    private MenuItem getCopyLocationItem() {
+        MenuItem copyLocationItem = new MenuItem("Copiar Location");
+        copyLocationItem.setOnAction(event -> {
+            RowData selected = tableView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                copyToClipboard(selected.location());
+            }
+        });
+        return copyLocationItem;
+    }
+
+    private void copyToClipboard(String text) {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(text);
+        clipboard.setContent(content);
     }
 }

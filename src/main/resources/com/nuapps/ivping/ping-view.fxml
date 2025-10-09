@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nuapps.ivping.PingController">
+<BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nuapps.ivping.PingController">
     <top>
         <MenuBar BorderPane.alignment="CENTER">
             <Menu text="_Arquivo">
