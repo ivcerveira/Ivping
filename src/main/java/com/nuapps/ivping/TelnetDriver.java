@@ -1,6 +1,6 @@
 package com.nuapps.ivping;
 
-import com.nuapps.ivping.model.RowData;
+import com.nuapps.ivping.model.HostData;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 
@@ -10,9 +10,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class TelnetDriver {
-    public static void telnet(TableView<RowData> theTable) throws URISyntaxException, IOException {
+    public static void telnet(TableView<HostData> theTable) throws URISyntaxException, IOException {
         if (theTable.getSelectionModel().getSelectedIndex() >= 0) {
-            ObservableList<RowData> data = theTable.getSelectionModel().getSelectedItems();
+            ObservableList<HostData> data = theTable.getSelectionModel().getSelectedItems();
             if (data.size() == 1) {
                 String hostName = data.getFirst().hostName();
 

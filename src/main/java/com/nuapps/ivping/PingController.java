@@ -1,7 +1,6 @@
 package com.nuapps.ivping;
 
-import com.nuapps.ivping.model.RowData;
-import javafx.application.Platform;
+import com.nuapps.ivping.model.HostData;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,20 +38,20 @@ public class PingController {
     private static final String EXCEL_FILE_NAME = "devices.xlsx";
     private static final Path EXCEL_FILE_PATH = Paths.get(APP_FOLDER, EXCEL_FILE_NAME);
 
-    private final ObservableList<RowData> rowDataList = FXCollections.observableArrayList();
+    private final ObservableList<HostData> hostDataList = FXCollections.observableArrayList();
     @FXML
-    private TableView<RowData> tableView;
+    private TableView<HostData> tableView;
     @FXML
-    private TableColumn<RowData, String> hostNameTableColumn;
+    private TableColumn<HostData, String> hostNameTableColumn;
     @FXML
-    private TableColumn<RowData, String> ipAddressTableColumn;
+    private TableColumn<HostData, String> ipAddressTableColumn;
     @FXML
-    private TableColumn<RowData, String> locationTableColumn;
+    private TableColumn<HostData, String> locationTableColumn;
     @FXML
     private CheckBox tCheckBox;
     @FXML
     private TextField searchTextField;
-    private FilteredList<RowData> filteredData;
+    private FilteredList<HostData> filteredData;
 
     @FXML
     private void initialize() {
@@ -117,16 +116,16 @@ public class PingController {
                 rowIterator.next();
             }
 
-            rowDataList.clear();
+            hostDataList.clear();
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
                 String col1Value = getCellValue(row, 0);
                 String col2Value = getCellValue(row, 1);
                 String col3Value = getCellValue(row, 2);
-                rowDataList.add(new RowData(col1Value, col2Value, col3Value));
+                hostDataList.add(new HostData(col1Value, col2Value, col3Value));
             }
 
-            filteredData = new FilteredList<>(rowDataList, p -> true);
+            filteredData = new FilteredList<>(hostDataList, p -> true);
             tableView.setItems(filteredData);
             tableView.getSelectionModel().selectFirst();
             tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -147,32 +146,45 @@ public class PingController {
     }
 
     private void setupSearchFilter() {
-        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(rowData -> {
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(hostData -> {
             if (newValue == null || newValue.isEmpty()) {
                 return true;
             }
             String lowerCaseFilter = newValue.toLowerCase();
 
-            if (rowData.hostName().toLowerCase().contains(lowerCaseFilter)) {
+            if (hostData.hostName().toLowerCase().contains(lowerCaseFilter)) {
                 return true;
-            } else if (rowData.ipAddress().toLowerCase().contains(lowerCaseFilter)) {
+            } else if (hostData.ipAddress().toLowerCase().contains(lowerCaseFilter)) {
                 return true;
             } else
-                return rowData.location().toLowerCase().contains(lowerCaseFilter);
+                return hostData.location().toLowerCase().contains(lowerCaseFilter);
         }));
     }
 
-    public void doExit() {
-        Platform.exit();
+//    public void doExit() {
+//        Platform.exit();
+//    }
+    @FXML
+    private void handleCloseApp() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmar saída");
+        alert.setHeaderText(null);
+        alert.setContentText("Deseja realmente fechar o aplicativo?");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                javafx.application.Platform.exit();
+            }
+        });
     }
 
     @FXML
     private void pingSelectedHost() {
-        ObservableList<RowData> selectedRowData = tableView.getSelectionModel().getSelectedItems();
+        ObservableList<HostData> selectedHostData = tableView.getSelectionModel().getSelectedItems();
 
-        if (!selectedRowData.isEmpty()) {
+        if (!selectedHostData.isEmpty()) {
             boolean continuous = tCheckBox.isSelected();
-            selectedRowData.forEach(rowData -> PingHelper.processRowData(rowData, continuous, tableView));
+            selectedHostData.forEach(hostData -> PingUtils.runPing(hostData, continuous, tableView));
         }
     }
 
@@ -249,7 +261,7 @@ public class PingController {
 
     @FXML
     private void applyFilter(String aux1, String aux2, String selectedItem) {
-        Predicate<RowData> p1 = host -> {
+        Predicate<HostData> p1 = host -> {
             if (aux1 == null || aux1.isEmpty()) {
                 return true;
             }
@@ -257,7 +269,7 @@ public class PingController {
             return host.hostName().toLowerCase().contains(lowerCaseFilter) || host.ipAddress().toLowerCase().contains(lowerCaseFilter) || host.location().toLowerCase().contains(lowerCaseFilter);
         };
 
-        Predicate<RowData> p2 = host -> {
+        Predicate<HostData> p2 = host -> {
             if (aux2 == null || aux2.isEmpty()) {
                 return true;
             }
@@ -276,7 +288,7 @@ public class PingController {
 
     @FXML
     private void cancelClicked() {
-        Predicate<RowData> predicate = host -> true;
+        Predicate<HostData> predicate = host -> true;
         filteredData.setPredicate(predicate);
     }
 
@@ -334,7 +346,7 @@ public class PingController {
 
         // Aplica o menu em cada linha da TableView
         tableView.setRowFactory(tv -> {
-            TableRow<RowData> row = new TableRow<>();
+            TableRow<HostData> row = new TableRow<>();
             row.setOnContextMenuRequested(event -> {
                 if (!row.isEmpty()) {
                     tableView.getSelectionModel().select(row.getIndex()); // garante que a linha clicada fique selecionada
@@ -348,7 +360,7 @@ public class PingController {
     private MenuItem getCopyIpItem() {
         MenuItem copyIpItem = new MenuItem("Copiar IP");
         copyIpItem.setOnAction(event -> {
-            RowData selected = tableView.getSelectionModel().getSelectedItem();
+            HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 copyToClipboard(selected.ipAddress());
             }
@@ -359,7 +371,7 @@ public class PingController {
     private MenuItem getCopyHostnameItem() {
         MenuItem copyHostItem = new MenuItem("Copiar Hostname");
         copyHostItem.setOnAction(event -> {
-            RowData selected = tableView.getSelectionModel().getSelectedItem();
+            HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 copyToClipboard(selected.hostName());
             }
@@ -370,7 +382,7 @@ public class PingController {
     private MenuItem getCopyLocationItem() {
         MenuItem copyLocationItem = new MenuItem("Copiar Location");
         copyLocationItem.setOnAction(event -> {
-            RowData selected = tableView.getSelectionModel().getSelectedItem();
+            HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 copyToClipboard(selected.location());
             }

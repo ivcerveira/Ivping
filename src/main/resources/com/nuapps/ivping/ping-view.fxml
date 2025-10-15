@@ -23,7 +23,7 @@
     <top>
         <MenuBar BorderPane.alignment="CENTER">
             <Menu text="_Arquivo">
-                <MenuItem onAction="#doExit" text="Sai_r">
+                <MenuItem onAction="#handleCloseApp" text="Sai_r">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                     </accelerator>

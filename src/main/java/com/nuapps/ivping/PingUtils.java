@@ -1,6 +1,6 @@
 package com.nuapps.ivping;
 
-import com.nuapps.ivping.model.RowData;
+import com.nuapps.ivping.model.HostData;
 import javafx.scene.control.TableView;
 
 import java.io.BufferedWriter;
@@ -9,15 +9,15 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 @SuppressWarnings("rawtypes")
-public class PingHelper {
-    private static final Logger LOGGER = Logger.getLogger(PingHelper.class.getName());
+public class PingUtils {
+    private static final Logger LOGGER = Logger.getLogger(PingUtils.class.getName());
     private static final String PING_N = "@ping -n 10 ";
     private static final String PING_T = "@ping -t ";
 
-    public static void processRowData(RowData selectedRowData, boolean continuous, TableView tableView) {
-        String hostName = selectedRowData.hostName();
-        String ipAddress = selectedRowData.ipAddress();
-        int lineNumber = tableView.getSelectionModel().getSelectedItems().indexOf(selectedRowData);
+    public static void runPing(HostData selectedHostData, boolean continuous, TableView tableView) {
+        String hostName = selectedHostData.hostName();
+        String ipAddress = selectedHostData.ipAddress();
+        int lineNumber = tableView.getSelectionModel().getSelectedItems().indexOf(selectedHostData);
         String pingCommand = (continuous ? PING_T : PING_N) + ipAddress;
 
         try {
