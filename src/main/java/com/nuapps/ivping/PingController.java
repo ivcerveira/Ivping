@@ -161,10 +161,7 @@ public class PingController {
         }));
     }
 
-//    public void doExit() {
-//        Platform.exit();
-//    }
-    @FXML
+@FXML
     private void handleCloseApp() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmar saída");

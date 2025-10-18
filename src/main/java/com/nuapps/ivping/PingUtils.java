@@ -8,13 +8,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-@SuppressWarnings("rawtypes")
 public class PingUtils {
     private static final Logger LOGGER = Logger.getLogger(PingUtils.class.getName());
     private static final String PING_N = "@ping -n 10 ";
     private static final String PING_T = "@ping -t ";
 
-    public static void runPing(HostData selectedHostData, boolean continuous, TableView tableView) {
+    public static void runPing(HostData selectedHostData, boolean continuous, TableView<HostData> tableView) {
         String hostName = selectedHostData.hostName();
         String ipAddress = selectedHostData.ipAddress();
         int lineNumber = tableView.getSelectionModel().getSelectedItems().indexOf(selectedHostData);
