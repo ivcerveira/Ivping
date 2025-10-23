@@ -6,7 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -17,11 +16,6 @@ public class MainApp extends Application {
 
         FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ping-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 522);
-
-        boolean wasSuccessful = new File(System.getenv("TEMP") + "/ivping").mkdir();
-        if (wasSuccessful) {
-            System.out.println("Pasta ivping criada com sucesso em ~/AppData/Local/Temp");
-        }
 
         stage.setTitle("Ivping");
         stage.setScene(scene);

@@ -28,12 +28,13 @@ public class PingUtils {
     }
 
     private static String createBatchFile(String hostName, String ipAddress, int lineNumber, String pingCommand) throws IOException {
-        String tempDir = System.getenv("TEMP");
+        //String tempDir = System.getenv("TEMP");
+        String tempDir = System.getProperty("java.io.tmpdir");
         if (tempDir == null) {
             throw new IllegalStateException("TEMP directory not found");
         }
 
-        String batFileName = tempDir + "/ivping/ping" + lineNumber + ".bat";
+        String batFileName = tempDir + "/ping_test" + lineNumber + ".bat";
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(batFileName))) {
             bufferedWriter.write("@echo off\n");
             bufferedWriter.write("@cls\n");
