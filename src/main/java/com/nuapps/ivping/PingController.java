@@ -8,9 +8,9 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
-import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
@@ -34,8 +34,8 @@ import java.util.function.Predicate;
 
 public class PingController {
     private static final String FIREFOX_PATH = System.getenv("ProgramFiles") + "\\Mozilla Firefox\\firefox.exe";
-    private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Local\\Ivping";
-    private static final String EXCEL_FILE_NAME = "devices.xlsx";
+    private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
+    private static final String EXCEL_FILE_NAME = "data_hosts.xlsx";
     private static final Path EXCEL_FILE_PATH = Paths.get(APP_FOLDER, EXCEL_FILE_NAME);
 
     private final ObservableList<HostData> hostDataList = FXCollections.observableArrayList();
@@ -59,23 +59,20 @@ public class PingController {
         ensureExcelFileExists();
         loadExcelData();
         setupSearchFilter();
-        setupContextMenu(); // 👈 adiciona o menu de contexto
+        setupContextMenu();
     }
 
     private void ensureExcelFileExists() {
         try {
-            // cria pasta se não existir
             Files.createDirectories(Paths.get(APP_FOLDER));
 
             if (!Files.exists(EXCEL_FILE_PATH)) {
-                // 🔹 Copia o modelo da pasta resources
-                try (InputStream defaultFile = getClass().getResourceAsStream("/devices.xlsx")) {
+                try (InputStream defaultFile = getClass().getResourceAsStream("/data_hosts.xlsx")) {
                     if (defaultFile != null) {
                         Files.copy(defaultFile, EXCEL_FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
                     } else {
-                        // Se o arquivo não for encontrado nos resources, cria um novo vazio
                         try (Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
-                            workbook.createSheet("Devices");
+                            workbook.createSheet("Hosts");
                             try (FileOutputStream out = new FileOutputStream(EXCEL_FILE_PATH.toFile())) {
                                 workbook.write(out);
                             }
@@ -96,7 +93,6 @@ public class PingController {
         hostNameTableColumn.setPrefWidth(170);
         ipAddressTableColumn.setPrefWidth(150);
 
-        // Configura a terceira coluna para ocupar o restante da largura
         tableView.widthProperty().addListener((observable, oldValue, newWidth) -> {
             double tableWidth = newWidth.doubleValue();
             double remainingWidth = tableWidth - (hostNameTableColumn.getWidth() + ipAddressTableColumn.getWidth());
@@ -161,7 +157,7 @@ public class PingController {
         }));
     }
 
-@FXML
+    @FXML
     private void handleCloseApp() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmar saída");
@@ -332,7 +328,6 @@ public class PingController {
     }
 
     private void setupContextMenu() {
-        // Cria o menu de contexto
         ContextMenu contextMenu = new ContextMenu();
 
         contextMenu.getItems().addAll(
@@ -341,7 +336,6 @@ public class PingController {
                 getCopyLocationItem()
         );
 
-        // Aplica o menu em cada linha da TableView
         tableView.setRowFactory(tv -> {
             TableRow<HostData> row = new TableRow<>();
             row.setOnContextMenuRequested(event -> {

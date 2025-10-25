@@ -28,7 +28,6 @@ public class PingUtils {
     }
 
     private static String createBatchFile(String hostName, String ipAddress, int lineNumber, String pingCommand) throws IOException {
-        //String tempDir = System.getenv("TEMP");
         String tempDir = System.getProperty("java.io.tmpdir");
         if (tempDir == null) {
             throw new IllegalStateException("TEMP directory not found");
