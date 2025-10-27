@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PingAnyIpDialogController {
+public class PingOtherDialogController {
     private static final String PING_ = "@ping ";
     private static final String PING_T = "@ping -t ";
 
@@ -37,7 +37,7 @@ public class PingAnyIpDialogController {
             boolean isIpValid = matcher.matches();
             if (isIpValid) {
                 try {
-                    new PingAnyIp().ping(enterIpAddressTextField.getText(),
+                    new PingOther().ping(enterIpAddressTextField.getText(),
                             (t2CheckBox.isSelected() ? PING_T : PING_));
                     handleCancelButtonClick();
                 } catch (IOException exception) {

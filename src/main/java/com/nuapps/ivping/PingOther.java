@@ -4,7 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class PingAnyIp {
+public class PingOther {
     public void ping(String ipAdrress, String strParameters) throws IOException {
         String pingCommand = strParameters + ipAdrress;
         String tempDir = System.getProperty("java.io.tmpdir");

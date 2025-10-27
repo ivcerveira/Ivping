@@ -288,7 +288,7 @@ public class PingController {
     @FXML
     private void showPingAnyIpDialog() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("pingAnyIpDialog.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("pingOtherDialog.fxml"));
             Scene scene = new Scene(loader.load());
 
             Stage pingAnyIpDialogStage = new Stage();
@@ -303,20 +303,13 @@ public class PingController {
         }
     }
 
-    @FXML
+@FXML
     private void showAboutDialog() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("aboutDialog.fxml"));
-            Stage aboutStage = new Stage();
-            aboutStage.setTitle("Sobre o Ivping");
-            aboutStage.initModality(Modality.WINDOW_MODAL);
-
-            aboutStage.setScene(new Scene(loader.load()));
-            aboutStage.setResizable(false);
-            aboutStage.showAndWait();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Sobre");
+        alert.setHeaderText("Ivping");
+        alert.setContentText("Autor: Ivaldo Lima");
+        alert.showAndWait();
     }
 
     private void showErrorDialog(String title, String message) {
@@ -386,5 +379,26 @@ public class PingController {
         ClipboardContent content = new ClipboardContent();
         content.putString(text);
         clipboard.setContent(content);
+    }
+
+    @FXML
+    private void openIvpingDataFolder() {
+        try {
+            Path folderPath = Paths.get(APP_FOLDER);
+
+            if (!Files.exists(folderPath)) {
+                Files.createDirectories(folderPath);
+            }
+
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.OPEN)) {
+                desktop.open(folderPath.toFile());
+            } else {
+                showErrorDialog("Erro", "Abertura de pastas não é suportada neste sistema.");
+            }
+
+        } catch (IOException e) {
+            showErrorDialog("Erro ao abrir pasta", e.getMessage());
+        }
     }
 }
