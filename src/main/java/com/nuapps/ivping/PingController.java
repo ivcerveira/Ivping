@@ -16,10 +16,9 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.awt.*;
 import java.io.*;
@@ -67,11 +66,12 @@ public class PingController {
             Files.createDirectories(Paths.get(APP_FOLDER));
 
             if (!Files.exists(EXCEL_FILE_PATH)) {
-                try (InputStream defaultFile = getClass().getResourceAsStream("/data_hosts.xlsx")) {
+                //try (InputStream defaultFile = getClass().getResourceAsStream("/data_hosts.xlsx")) {
+                try (InputStream defaultFile = getClass().getResourceAsStream("/" + EXCEL_FILE_NAME)) {
                     if (defaultFile != null) {
                         Files.copy(defaultFile, EXCEL_FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
                     } else {
-                        try (Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
+                        try (Workbook workbook = new XSSFWorkbook()) {
                             workbook.createSheet("Hosts");
                             try (FileOutputStream out = new FileOutputStream(EXCEL_FILE_PATH.toFile())) {
                                 workbook.write(out);
@@ -115,9 +115,9 @@ public class PingController {
             hostDataList.clear();
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                String col1Value = getCellValue(row, 0);
-                String col2Value = getCellValue(row, 1);
-                String col3Value = getCellValue(row, 2);
+                String col1Value = getCellValue(row.getCell(0));
+                String col2Value = getCellValue(row.getCell(1));
+                String col3Value = getCellValue(row.getCell(2));
                 hostDataList.add(new HostData(col1Value, col2Value, col3Value));
             }
 
@@ -133,11 +133,23 @@ public class PingController {
         }
     }
 
-    private String getCellValue(Row row, int index) {
-        try {
-            return row.getCell(index).getStringCellValue();
-        } catch (Exception e) {
-            return "";
+    private String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                } else {
+                    return String.valueOf(cell.getNumericCellValue());
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            default:
+                return "";
         }
     }
 
@@ -303,7 +315,7 @@ public class PingController {
         }
     }
 
-@FXML
+    @FXML
     private void showAboutDialog() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Sobre");
