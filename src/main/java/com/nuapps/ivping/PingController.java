@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -17,8 +18,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.awt.*;
 import java.io.*;
@@ -27,15 +26,11 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Iterator;
 import java.util.function.Predicate;
 
 public class PingController {
     private static final String FIREFOX_PATH = System.getenv("ProgramFiles") + "\\Mozilla Firefox\\firefox.exe";
     private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
-    private static final String EXCEL_FILE_NAME = "data_hosts.xlsx";
-    private static final Path EXCEL_FILE_PATH = Paths.get(APP_FOLDER, EXCEL_FILE_NAME);
 
     private final ObservableList<HostData> hostDataList = FXCollections.observableArrayList();
     @FXML
@@ -47,7 +42,7 @@ public class PingController {
     @FXML
     private TableColumn<HostData, String> locationTableColumn;
     @FXML
-    private CheckBox tCheckBox;
+    private CheckBox chkPingContinuous;
     @FXML
     private TextField searchTextField;
     private FilteredList<HostData> filteredData;
@@ -55,34 +50,32 @@ public class PingController {
     @FXML
     private void initialize() {
         setupTableColumns();
-        ensureExcelFileExists();
-        loadExcelData();
+
+        // NOVA CHAMADA
+        ExcelHostLoader excelLoader = new ExcelHostLoader();
+        hostDataList.addAll(excelLoader.loadHosts());
+
+        filteredData = new FilteredList<>(hostDataList, p -> true);
+
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(hostData -> {
+            if (newValue == null || newValue.isBlank()) {
+                return true;
+            }
+            String lowerCaseFilter = newValue.toLowerCase();
+            return hostData.hostName().toLowerCase().contains(lowerCaseFilter) ||
+                    hostData.ipAddress().toLowerCase().contains(lowerCaseFilter) ||
+                    hostData.location().toLowerCase().contains(lowerCaseFilter);
+        }));
+
+        SortedList<HostData> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(tableView.comparatorProperty());
+        tableView.setItems(sortedData);
+
+        tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        if (!hostDataList.isEmpty()) {tableView.getSelectionModel().selectFirst();}
+
         setupSearchFilter();
         setupContextMenu();
-    }
-
-    private void ensureExcelFileExists() {
-        try {
-            Files.createDirectories(Paths.get(APP_FOLDER));
-
-            if (!Files.exists(EXCEL_FILE_PATH)) {
-                //try (InputStream defaultFile = getClass().getResourceAsStream("/data_hosts.xlsx")) {
-                try (InputStream defaultFile = getClass().getResourceAsStream("/" + EXCEL_FILE_NAME)) {
-                    if (defaultFile != null) {
-                        Files.copy(defaultFile, EXCEL_FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
-                    } else {
-                        try (Workbook workbook = new XSSFWorkbook()) {
-                            workbook.createSheet("Hosts");
-                            try (FileOutputStream out = new FileOutputStream(EXCEL_FILE_PATH.toFile())) {
-                                workbook.write(out);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            showErrorDialog("Erro ao preparar arquivo", e.getMessage());
-        }
     }
 
     private void setupTableColumns() {
@@ -102,59 +95,10 @@ public class PingController {
         });
     }
 
-    private void loadExcelData() {
-        try (FileInputStream file = new FileInputStream(EXCEL_FILE_PATH.toFile());
-             Workbook workbook = WorkbookFactory.create(file)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.iterator();
-
-            if (rowIterator.hasNext()) {
-                rowIterator.next();
-            }
-
-            hostDataList.clear();
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                String col1Value = getCellValue(row.getCell(0));
-                String col2Value = getCellValue(row.getCell(1));
-                String col3Value = getCellValue(row.getCell(2));
-                hostDataList.add(new HostData(col1Value, col2Value, col3Value));
-            }
-
-            filteredData = new FilteredList<>(hostDataList, p -> true);
-            tableView.setItems(filteredData);
-            tableView.getSelectionModel().selectFirst();
-            tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
-        } catch (FileNotFoundException e) {
-            showErrorDialog("Erro", EXCEL_FILE_PATH + " não existe.");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String getCellValue(Cell cell) {
-        if (cell == null) return "";
-        switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue().trim();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();
-                } else {
-                    return String.valueOf(cell.getNumericCellValue());
-                }
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            case FORMULA:
-                return cell.getCellFormula();
-            default:
-                return "";
-        }
-    }
-
     private void setupSearchFilter() {
-        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(hostData -> {
+        searchTextField.textProperty().addListener((observable,
+                                                    oldValue, newValue) -> filteredData.setPredicate
+                (hostData -> {
             if (newValue == null || newValue.isEmpty()) {
                 return true;
             }
@@ -188,7 +132,7 @@ public class PingController {
         ObservableList<HostData> selectedHostData = tableView.getSelectionModel().getSelectedItems();
 
         if (!selectedHostData.isEmpty()) {
-            boolean continuous = tCheckBox.isSelected();
+            boolean continuous = chkPingContinuous.isSelected();
             selectedHostData.forEach(hostData -> PingUtils.runPing(hostData, continuous, tableView));
         }
     }
@@ -256,7 +200,8 @@ public class PingController {
             dialogStage.showAndWait();
 
             if (ctrl.isOkClicked()) {
-                applyFilter(ctrl.getStringSearchField1(), ctrl.getStringSearchField2(), ctrl.getAndOrComboBox().getSelectionModel().getSelectedItem());
+                applyFilter(ctrl.getStringSearchField1(), ctrl.getStringSearchField2(),
+                        ctrl.getAndOrComboBox().getSelectionModel().getSelectedItem());
             }
             if (ctrl.isCancelClicked()) cancelClicked();
         } catch (IOException exception) {

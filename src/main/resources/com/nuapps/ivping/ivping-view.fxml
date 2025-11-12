@@ -72,7 +72,7 @@
                     <tooltip>
                         <Tooltip text="Ping (Ctrl+P)" />
                     </tooltip></Button>
-                <CheckBox fx:id="tCheckBox" mnemonicParsing="false" text="-t" />
+                <CheckBox fx:id="chkPingContinuous" mnemonicParsing="false" text="-t" />
                 <Separator visible="false" />
                 <Button mnemonicParsing="false" onAction="#openSSHSession">
                     <graphic>
