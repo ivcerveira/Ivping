@@ -17,10 +17,9 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.apache.poi.ss.usermodel.*;
 
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -51,7 +50,6 @@ public class PingController {
     private void initialize() {
         setupTableColumns();
 
-        // NOVA CHAMADA
         ExcelHostLoader excelLoader = new ExcelHostLoader();
         hostDataList.addAll(excelLoader.loadHosts());
 
@@ -72,7 +70,9 @@ public class PingController {
         tableView.setItems(sortedData);
 
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        if (!hostDataList.isEmpty()) {tableView.getSelectionModel().selectFirst();}
+        if (!hostDataList.isEmpty()) {
+            tableView.getSelectionModel().selectFirst();
+        }
 
         setupSearchFilter();
         setupContextMenu();
@@ -99,18 +99,18 @@ public class PingController {
         searchTextField.textProperty().addListener((observable,
                                                     oldValue, newValue) -> filteredData.setPredicate
                 (hostData -> {
-            if (newValue == null || newValue.isEmpty()) {
-                return true;
-            }
-            String lowerCaseFilter = newValue.toLowerCase();
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
 
-            if (hostData.hostName().toLowerCase().contains(lowerCaseFilter)) {
-                return true;
-            } else if (hostData.ipAddress().toLowerCase().contains(lowerCaseFilter)) {
-                return true;
-            } else
-                return hostData.location().toLowerCase().contains(lowerCaseFilter);
-        }));
+                    if (hostData.hostName().toLowerCase().contains(lowerCaseFilter)) {
+                        return true;
+                    } else if (hostData.ipAddress().toLowerCase().contains(lowerCaseFilter)) {
+                        return true;
+                    } else
+                        return hostData.location().toLowerCase().contains(lowerCaseFilter);
+                }));
     }
 
     @FXML
@@ -149,7 +149,7 @@ public class PingController {
 
     @FXML
     private void openTmnWebsite() throws IOException {
-        String url = "http://tms.petrobras.com.br";
+        String url = "https://tms.petrobras.com.br";
         String[] command = {FIREFOX_PATH, url};
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
