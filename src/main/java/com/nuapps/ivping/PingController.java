@@ -1,6 +1,12 @@
 package com.nuapps.ivping;
 
+import com.nuapps.ivping.config.AppConfig;
+import com.nuapps.ivping.config.AppConfigException;
+import com.nuapps.ivping.config.AppFactory;
+import com.nuapps.ivping.constants.ConfigKeys;
 import com.nuapps.ivping.model.HostData;
+import com.nuapps.ivping.service.BrowserService;
+import com.nuapps.ivping.util.AlertUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,6 +16,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
@@ -20,7 +27,6 @@ import javafx.stage.Stage;
 
 import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,10 +34,10 @@ import java.nio.file.Paths;
 import java.util.function.Predicate;
 
 public class PingController {
-    private static final String FIREFOX_PATH = System.getenv("ProgramFiles") + "\\Mozilla Firefox\\firefox.exe";
     private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
 
     private final ObservableList<HostData> hostDataList = FXCollections.observableArrayList();
+    private final BrowserService browserService = AppFactory.browserService();
     @FXML
     private TableView<HostData> tableView;
     @FXML
@@ -45,6 +51,14 @@ public class PingController {
     @FXML
     private TextField searchTextField;
     private FilteredList<HostData> filteredData;
+    @FXML
+    private Button tmnButton;
+    @FXML
+    private Button ciscoprimeButton;
+    @FXML
+    private Button zabbixButton;
+    @FXML
+    private Button sigmonButton;
 
     @FXML
     private void initialize() {
@@ -53,17 +67,7 @@ public class PingController {
         ExcelHostLoader excelLoader = new ExcelHostLoader();
         hostDataList.addAll(excelLoader.loadHosts());
 
-        filteredData = new FilteredList<>(hostDataList, p -> true);
-
-        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> filteredData.setPredicate(hostData -> {
-            if (newValue == null || newValue.isBlank()) {
-                return true;
-            }
-            String lowerCaseFilter = newValue.toLowerCase();
-            return hostData.hostName().toLowerCase().contains(lowerCaseFilter) ||
-                    hostData.ipAddress().toLowerCase().contains(lowerCaseFilter) ||
-                    hostData.location().toLowerCase().contains(lowerCaseFilter);
-        }));
+        filteredData = new FilteredList<>(hostDataList, _ -> true);
 
         SortedList<HostData> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(tableView.comparatorProperty());
@@ -76,6 +80,33 @@ public class PingController {
 
         setupSearchFilter();
         setupContextMenu();
+
+        tmnButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.TMN_URL));
+        ciscoprimeButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.CISCOPRIME_URL));
+        zabbixButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.ZABBIX_URL));
+        sigmonButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.SIGMON_URL));
+    }
+
+    private void openConfiguredUrl(String configKey) {
+        try {
+            AppConfig appConfig = AppFactory.appConfig();
+            String url = appConfig.getRequired(configKey);
+            browserService.open(url);
+
+        } catch (AppConfigException e) {
+            AlertUtils.showError(
+                    "Configuração inválida",
+                    e.getMessage()
+            );
+
+        } catch (Exception e) {
+            AlertUtils.showError(
+                    "Erro",
+                    "Não foi possível abrir a URL configurada."
+            );
+            //noinspection CallToPrintStackTrace
+            e.printStackTrace();
+        }
     }
 
     private void setupTableColumns() {
@@ -86,7 +117,7 @@ public class PingController {
         hostNameTableColumn.setPrefWidth(170);
         ipAddressTableColumn.setPrefWidth(150);
 
-        tableView.widthProperty().addListener((observable, oldValue, newWidth) -> {
+        tableView.widthProperty().addListener((_, _, newWidth) -> {
             double tableWidth = newWidth.doubleValue();
             double remainingWidth = tableWidth - (hostNameTableColumn.getWidth() + ipAddressTableColumn.getWidth());
             if (remainingWidth > 0) {
@@ -96,8 +127,8 @@ public class PingController {
     }
 
     private void setupSearchFilter() {
-        searchTextField.textProperty().addListener((observable,
-                                                    oldValue, newValue) -> filteredData.setPredicate
+        searchTextField.textProperty().addListener((_,
+                                                    _, newValue) -> filteredData.setPredicate
                 (hostData -> {
                     if (newValue == null || newValue.isEmpty()) {
                         return true;
@@ -119,6 +150,10 @@ public class PingController {
         alert.setTitle("Confirmar saída");
         alert.setHeaderText(null);
         alert.setContentText("Deseja realmente fechar o aplicativo?");
+
+        Stage owner = (Stage) tableView.getScene().getWindow();
+        alert.initOwner(owner);
+        alert.initModality(Modality.WINDOW_MODAL); // opcional (initOwner já ajuda bastante)
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -148,34 +183,6 @@ public class PingController {
     }
 
     @FXML
-    private void openTmnWebsite() throws IOException {
-        String url = "https://tms.petrobras.com.br";
-        String[] command = {FIREFOX_PATH, url};
-
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.start();
-    }
-
-    @FXML
-    private void openCiscoPrimeWebsite() throws IOException {
-        String url = "https://ciscoprime.net.petrobras.com.br";
-        String[] command = {FIREFOX_PATH, url};
-
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.start();
-    }
-
-    @FXML
-    private void openZabbixWebsite() throws URISyntaxException, IOException {
-        Desktop.getDesktop().browse(new URI("https://zbxcorp.petrobras.com.br/zabbix"));
-    }
-
-    @FXML
-    private void openSigmonWebsite() throws URISyntaxException, IOException {
-        Desktop.getDesktop().browse(new URI("https://sigmon/std/cgi-bin/admin-net-hosts.cgi?opcao=Consulta+Detalhada"));
-    }
-
-    @FXML
     private void clearTextField() {
         searchTextField.clear();
         searchTextField.requestFocus();
@@ -192,7 +199,12 @@ public class PingController {
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Mostrar linhas que:");
             dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            Stage owner = (Stage) tableView.getScene().getWindow();
+            dialogStage.initOwner(owner);
+
             dialogStage.setScene(scene);
+
             SearchMoreOptionsDialogController ctrl = loader.getController();
             ctrl.setSearchMoreOptionsDialogStage(dialogStage);
 
@@ -204,6 +216,7 @@ public class PingController {
                         ctrl.getAndOrComboBox().getSelectionModel().getSelectedItem());
             }
             if (ctrl.isCancelClicked()) cancelClicked();
+
         } catch (IOException exception) {
             showErrorDialog("Error", exception.getMessage());
         }
@@ -238,7 +251,7 @@ public class PingController {
 
     @FXML
     private void cancelClicked() {
-        Predicate<HostData> predicate = host -> true;
+        Predicate<HostData> predicate = _ -> true;
         filteredData.setPredicate(predicate);
     }
 
@@ -251,8 +264,11 @@ public class PingController {
             Stage pingAnyIpDialogStage = new Stage();
             pingAnyIpDialogStage.setTitle("Digite o IP");
             pingAnyIpDialogStage.initModality(Modality.WINDOW_MODAL);
-            pingAnyIpDialogStage.setScene(scene);
 
+            Stage owner = (Stage) tableView.getScene().getWindow();
+            pingAnyIpDialogStage.initOwner(owner);  // <<< ESSENCIAL
+
+            pingAnyIpDialogStage.setScene(scene);
             pingAnyIpDialogStage.setResizable(false);
             pingAnyIpDialogStage.showAndWait();
         } catch (IOException exception) {
@@ -266,6 +282,14 @@ public class PingController {
         alert.setTitle("Sobre");
         alert.setHeaderText("Ivping");
         alert.setContentText("Autor: Ivaldo Lima");
+
+        // pega o Stage da janela principal (a que contém o TableView)
+        Stage owner = (Stage) tableView.getScene().getWindow();
+
+        // define o owner para o Alert abrir no mesmo monitor e ficar ligado à janela
+        alert.initOwner(owner);
+        alert.initModality(Modality.WINDOW_MODAL); // opcional (initOwner já ajuda bastante)
+
         alert.showAndWait();
     }
 
@@ -286,7 +310,7 @@ public class PingController {
                 getCopyLocationItem()
         );
 
-        tableView.setRowFactory(tv -> {
+        tableView.setRowFactory(_ -> {
             TableRow<HostData> row = new TableRow<>();
             row.setOnContextMenuRequested(event -> {
                 if (!row.isEmpty()) {
@@ -300,7 +324,7 @@ public class PingController {
 
     private MenuItem getCopyIpItem() {
         MenuItem copyIpItem = new MenuItem("Copiar IP");
-        copyIpItem.setOnAction(event -> {
+        copyIpItem.setOnAction(_ -> {
             HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 copyToClipboard(selected.ipAddress());
@@ -311,7 +335,7 @@ public class PingController {
 
     private MenuItem getCopyHostnameItem() {
         MenuItem copyHostItem = new MenuItem("Copiar Hostname");
-        copyHostItem.setOnAction(event -> {
+        copyHostItem.setOnAction(_ -> {
             HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 copyToClipboard(selected.hostName());
@@ -322,7 +346,7 @@ public class PingController {
 
     private MenuItem getCopyLocationItem() {
         MenuItem copyLocationItem = new MenuItem("Copiar Location");
-        copyLocationItem.setOnAction(event -> {
+        copyLocationItem.setOnAction(_ -> {
             HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 copyToClipboard(selected.location());

@@ -83,8 +83,7 @@
                         <Tooltip text="SSH (Ctrl+H)" />
                     </tooltip></Button>
                 <Separator visible="false" />
-<!--                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="pesquisar..." stylesheets="@MyTheme.css" />-->
-                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="pesquisar..." />
+                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="pesquisar..." stylesheets="@MyTheme.css" />
 
                 <Button mnemonicParsing="false" onAction="#clearTextField" style="-fx-font-size: 14px; -fx-text-fill: gray;" text="✖">
                     <tooltip>
@@ -103,7 +102,7 @@
                     </graphic></Button>
                 <Separator orientation="VERTICAL" />
                 <HBox alignment="CENTER_LEFT" spacing="6.0">
-                    <Button mnemonicParsing="false" onAction="#openTmnWebsite" text="TMN" textAlignment="CENTER">
+                    <Button fx:id="tmnButton" mnemonicParsing="false" text="TMN" textAlignment="CENTER">
                         <tooltip>
                             <Tooltip text="TMN" />
                         </tooltip>
@@ -111,7 +110,7 @@
                             <Font name="System Bold" size="12.0" />
                         </font>
                     </Button>
-                    <Button mnemonicParsing="false" onAction="#openCiscoPrimeWebsite" text="Cisco Prime">
+                    <Button fx:id="ciscoprimeButton" mnemonicParsing="false" text="Cisco Prime">
                         <tooltip>
                             <Tooltip text="Cisco Prime" />
                         </tooltip>
@@ -119,7 +118,7 @@
                             <Font name="System Bold" size="12.0" />
                         </font>
                     </Button>
-                    <Button mnemonicParsing="false" onAction="#openZabbixWebsite" text="Zabbix">
+                    <Button fx:id="zabbixButton" mnemonicParsing="false" text="Zabbix">
                         <tooltip>
                             <Tooltip text="Zabbix" />
                         </tooltip>
@@ -127,7 +126,7 @@
                             <Font name="System Bold" size="12.0" />
                         </font>
                     </Button>
-                    <Button mnemonicParsing="false" onAction="#openSigmonWebsite" text="Sigmon">
+                    <Button fx:id="sigmonButton" mnemonicParsing="false" text="Sigmon">
                         <font>
                             <Font name="System Bold" size="12.0" />
                         </font>
@@ -149,8 +148,7 @@
         </VBox>
     </top>
     <center>
-<!--        <TableView fx:id="tableView" editable="true" stylesheets="@MyTheme.css" BorderPane.alignment="CENTER">-->
-        <TableView fx:id="tableView" editable="true" BorderPane.alignment="CENTER">
+        <TableView fx:id="tableView" editable="true" stylesheets="@MyTheme.css" BorderPane.alignment="CENTER">
             <columns>
                 <TableColumn fx:id="hostNameTableColumn" text="  Host Name" />
                 <TableColumn fx:id="ipAddressTableColumn" text="  IP Address" />
