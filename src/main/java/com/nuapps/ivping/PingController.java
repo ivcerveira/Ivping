@@ -182,13 +182,11 @@ public class PingController {
 
     @FXML
     private void openSSHSession() throws URISyntaxException, IOException {
-        //SshDriver.ssh(tableView);
         RemoteAccessDriver.open(tableView, RemoteAccessDriver.AccessType.SSH);
     }
 
     @FXML
     private void openTelnetSession() throws URISyntaxException, IOException {
-        //TelnetDriver.telnet(tableView);
         RemoteAccessDriver.open(tableView, RemoteAccessDriver.AccessType.TELNET);
     }
 
@@ -265,27 +263,6 @@ public class PingController {
         filteredData.setPredicate(predicate);
     }
 
-//    @FXML
-//    private void showPingAnyIpDialog() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("pingOtherDialog.fxml"));
-//            Scene scene = new Scene(loader.load());
-//
-//            Stage pingAnyIpDialogStage = new Stage();
-//            pingAnyIpDialogStage.setTitle("Digite o IP");
-//            pingAnyIpDialogStage.initModality(Modality.WINDOW_MODAL);
-//
-//            Stage owner = (Stage) tableView.getScene().getWindow();
-//            pingAnyIpDialogStage.initOwner(owner);  // <<< ESSENCIAL
-//
-//            pingAnyIpDialogStage.setScene(scene);
-//            pingAnyIpDialogStage.setResizable(false);
-//            pingAnyIpDialogStage.showAndWait();
-//        } catch (IOException exception) {
-//            throw new RuntimeException(exception);
-//        }
-//    }
-
     @FXML
     private void showAboutDialog() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -299,7 +276,6 @@ public class PingController {
         // define o owner para o Alert abrir no mesmo monitor e ficar ligado à janela
         alert.initOwner(owner);
         alert.initModality(Modality.WINDOW_MODAL); // opcional (initOwner já ajuda bastante)
-
         alert.showAndWait();
     }
 

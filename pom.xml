@@ -16,7 +16,6 @@
     </properties>
 
     <dependencies>
-
         <!-- Source: https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
         <dependency>
             <groupId>org.apache.poi</groupId>

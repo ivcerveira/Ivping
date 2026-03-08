@@ -50,7 +50,6 @@ public class PingUtils {
         new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName).start();
     }
 
-
     public static void runPing(String ipAddress, boolean continuous) {
         String pingCommand = (continuous ? PING_T : PING_N) + ipAddress;
         String uniqueId = Long.toString(System.nanoTime());
@@ -62,5 +61,4 @@ public class PingUtils {
             LOGGER.severe("Error executing ping: " + e.getMessage());
         }
     }
-
 }
