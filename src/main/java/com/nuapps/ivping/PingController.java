@@ -396,7 +396,7 @@ public class PingController {
                 txtIpAddress.requestFocus();
                 return;
             }
-            PingUtils.runPing(ipAddress, chkPingContinuo.isSelected());
+            PingUtils.runDefaultPingByIp(ipAddress, chkPingContinuo.isSelected());
         };
 
         btnPingTest.setOnAction(_ -> runPingTest.run());

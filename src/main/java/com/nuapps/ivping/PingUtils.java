@@ -12,6 +12,7 @@ public class PingUtils {
     private static final Logger LOGGER = Logger.getLogger(PingUtils.class.getName());
     private static final String PING_N = "@ping -n 10 ";
     private static final String PING_T = "@ping -t ";
+    private static final String PING_DEFAULT = "@ping ";
 
     public static void runPing(HostData selectedHostData, boolean continuous, TableView<HostData> tableView) {
         String hostName = selectedHostData.hostName();
@@ -50,15 +51,32 @@ public class PingUtils {
         new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName).start();
     }
 
-    public static void runPing(String ipAddress, boolean continuous) {
-        String pingCommand = (continuous ? PING_T : PING_N) + ipAddress;
+    public static void runDefaultPingByIp(String ipAddress, boolean continuous) {
         String uniqueId = Long.toString(System.nanoTime());
+        String pingCommand = (continuous ? PING_T : PING_DEFAULT) + ipAddress;
+        String windowTitle = "Ping por IP  [" + ipAddress + "]";
 
         try {
-            String batFileName = createBatchFile(ipAddress, ipAddress, uniqueId, pingCommand);
+            String batFileName = createDefaultPromptBatchFile(uniqueId, windowTitle, pingCommand);
             executeBatchFile(batFileName);
         } catch (IOException e) {
-            LOGGER.severe("Error executing ping: " + e.getMessage());
+            LOGGER.severe("Error executing default ping: " + e.getMessage());
         }
+    }
+
+    private static String createDefaultPromptBatchFile(String fileSuffix, String windowTitle, String pingCommand) throws IOException {
+        String tempDir = System.getProperty("java.io.tmpdir");
+        if (tempDir == null) {
+            throw new IllegalStateException("TEMP directory not found");
+        }
+
+        String batFileName = tempDir + "/ping_default" + fileSuffix + ".bat";
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(batFileName))) {
+            bufferedWriter.write("@echo off\n");
+            bufferedWriter.write("@title " + windowTitle + "\n");
+            bufferedWriter.write(pingCommand + "\n");
+            bufferedWriter.write("@pause\n");
+        }
+        return batFileName;
     }
 }
