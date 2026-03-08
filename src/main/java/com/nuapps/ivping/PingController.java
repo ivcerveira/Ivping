@@ -14,14 +14,19 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -38,6 +43,9 @@ public class PingController {
 
     private final ObservableList<HostData> hostDataList = FXCollections.observableArrayList();
     private final BrowserService browserService = AppFactory.browserService();
+
+    public Button pingButton;
+    
     @FXML
     private TableView<HostData> tableView;
     @FXML
@@ -174,12 +182,14 @@ public class PingController {
 
     @FXML
     private void openSSHSession() throws URISyntaxException, IOException {
-        SshDriver.ssh(tableView);
+        //SshDriver.ssh(tableView);
+        RemoteAccessDriver.open(tableView, RemoteAccessDriver.AccessType.SSH);
     }
 
     @FXML
     private void openTelnetSession() throws URISyntaxException, IOException {
-        TelnetDriver.telnet(tableView);
+        //TelnetDriver.telnet(tableView);
+        RemoteAccessDriver.open(tableView, RemoteAccessDriver.AccessType.TELNET);
     }
 
     @FXML
@@ -255,26 +265,26 @@ public class PingController {
         filteredData.setPredicate(predicate);
     }
 
-    @FXML
-    private void showPingAnyIpDialog() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("pingOtherDialog.fxml"));
-            Scene scene = new Scene(loader.load());
-
-            Stage pingAnyIpDialogStage = new Stage();
-            pingAnyIpDialogStage.setTitle("Digite o IP");
-            pingAnyIpDialogStage.initModality(Modality.WINDOW_MODAL);
-
-            Stage owner = (Stage) tableView.getScene().getWindow();
-            pingAnyIpDialogStage.initOwner(owner);  // <<< ESSENCIAL
-
-            pingAnyIpDialogStage.setScene(scene);
-            pingAnyIpDialogStage.setResizable(false);
-            pingAnyIpDialogStage.showAndWait();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
-    }
+//    @FXML
+//    private void showPingAnyIpDialog() {
+//        try {
+//            FXMLLoader loader = new FXMLLoader(getClass().getResource("pingOtherDialog.fxml"));
+//            Scene scene = new Scene(loader.load());
+//
+//            Stage pingAnyIpDialogStage = new Stage();
+//            pingAnyIpDialogStage.setTitle("Digite o IP");
+//            pingAnyIpDialogStage.initModality(Modality.WINDOW_MODAL);
+//
+//            Stage owner = (Stage) tableView.getScene().getWindow();
+//            pingAnyIpDialogStage.initOwner(owner);  // <<< ESSENCIAL
+//
+//            pingAnyIpDialogStage.setScene(scene);
+//            pingAnyIpDialogStage.setResizable(false);
+//            pingAnyIpDialogStage.showAndWait();
+//        } catch (IOException exception) {
+//            throw new RuntimeException(exception);
+//        }
+//    }
 
     @FXML
     private void showAboutDialog() {
@@ -381,5 +391,81 @@ public class PingController {
         } catch (IOException e) {
             showErrorDialog("Erro ao abrir pasta", e.getMessage());
         }
+    }
+
+    @FXML
+    private void onPingByIpClicked() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Ping por IP");
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(pingButton.getScene().getWindow());
+
+        TextField txtIpAddress = new TextField();
+        txtIpAddress.setPromptText("Digite o IP Address");
+        CheckBox chkPingContinuo = new CheckBox("-t");
+
+        Button btnPingTest = new Button("Enviar Ping Test");
+        Button btnLimpar = new Button("Limpar");
+        Button btnCancelar = new Button("Cancelar");
+
+        Runnable runPingTest = () -> {
+            String ipAddress = txtIpAddress.getText() == null ? "" : txtIpAddress.getText().trim();
+            if (!isValidIpv4(ipAddress)) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("IP invalido");
+                alert.setHeaderText(null);
+                alert.setContentText("Digite um endereco IPv4 valido. Exemplo: 10.0.0.1");
+                alert.initOwner(dialog);
+                alert.showAndWait();
+                txtIpAddress.requestFocus();
+                return;
+            }
+            PingUtils.runPing(ipAddress, chkPingContinuo.isSelected());
+        };
+
+        btnPingTest.setOnAction(_ -> runPingTest.run());
+        txtIpAddress.setOnAction(_ -> runPingTest.run());
+
+        btnLimpar.setOnAction(_ -> {
+            txtIpAddress.clear();
+            txtIpAddress.requestFocus();
+        });
+
+        btnCancelar.setOnAction(_ -> dialog.close());
+
+        HBox buttonBox = new HBox(10, btnPingTest, btnLimpar, btnCancelar);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        VBox root = new VBox(12, new Label("IP Address:"), txtIpAddress, chkPingContinuo, buttonBox);
+        root.setPadding(new Insets(12));
+
+        Scene scene = new Scene(root, 430, 175);
+        dialog.setScene(scene);
+        dialog.setResizable(false);
+        dialog.show();
+        txtIpAddress.requestFocus();
+    }
+
+    private boolean isValidIpv4(String ipAddress) {
+        if (ipAddress == null || ipAddress.isBlank()) {
+            return false;
+        }
+
+        String[] parts = ipAddress.split("\\.");
+        if (parts.length != 4) {
+            return false;
+        }
+
+        for (String part : parts) {
+            if (!part.matches("\\d{1,3}")) {
+                return false;
+            }
+            int value = Integer.parseInt(part);
+            if (value < 0 || value > 255) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

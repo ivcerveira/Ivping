@@ -20,20 +20,21 @@ public class PingUtils {
         String pingCommand = (continuous ? PING_T : PING_N) + ipAddress;
 
         try {
-            String batFileName = createBatchFile(hostName, ipAddress, lineNumber, pingCommand);
+            String batFileName = createBatchFile(hostName, ipAddress, Integer.toString(lineNumber), pingCommand);
             executeBatchFile(batFileName);
         } catch (IOException e) {
             LOGGER.severe("Error processing row data: " + e.getMessage());
         }
     }
 
-    private static String createBatchFile(String hostName, String ipAddress, int lineNumber, String pingCommand) throws IOException {
+    private static String createBatchFile(String hostName, String ipAddress,
+                                          String fileSuffix, String pingCommand) throws IOException {
         String tempDir = System.getProperty("java.io.tmpdir");
         if (tempDir == null) {
             throw new IllegalStateException("TEMP directory not found");
         }
 
-        String batFileName = tempDir + "/ping_test" + lineNumber + ".bat";
+        String batFileName = tempDir + "/ping_test" + fileSuffix + ".bat";
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(batFileName))) {
             bufferedWriter.write("@echo off\n");
             bufferedWriter.write("@cls\n");
@@ -48,4 +49,18 @@ public class PingUtils {
     private static void executeBatchFile(String batFileName) throws IOException {
         new ProcessBuilder("rundll32", "SHELL32.DLL,ShellExec_RunDLL", batFileName).start();
     }
+
+
+    public static void runPing(String ipAddress, boolean continuous) {
+        String pingCommand = (continuous ? PING_T : PING_N) + ipAddress;
+        String uniqueId = Long.toString(System.nanoTime());
+
+        try {
+            String batFileName = createBatchFile(ipAddress, ipAddress, uniqueId, pingCommand);
+            executeBatchFile(batFileName);
+        } catch (IOException e) {
+            LOGGER.severe("Error executing ping: " + e.getMessage());
+        }
+    }
+
 }
