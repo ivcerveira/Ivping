@@ -40,9 +40,12 @@ import java.util.function.Predicate;
 
 public class PingController {
     private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
+    private static final int IP_HISTORY_LIMIT = 10;
 
     private final ObservableList<HostData> hostDataList = FXCollections.observableArrayList();
+    private final ObservableList<String> ipHistoryList = FXCollections.observableArrayList();
     private final BrowserService browserService = AppFactory.browserService();
+    private final IpHistoryManager ipHistoryManager = new IpHistoryManager(IP_HISTORY_LIMIT);
 
     public Button pingButton;
     
@@ -88,6 +91,7 @@ public class PingController {
 
         setupSearchFilter();
         setupContextMenu();
+        loadIpHistory();
 
         tmnButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.TMN_URL));
         ciscoprimeButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.CISCOPRIME_URL));
@@ -200,7 +204,7 @@ public class PingController {
     private void showSearchMoreOptionsDialog() {
         try {
             searchTextField.clear();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("searchMoreOptionsDialog.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("search_more_options_dialog.fxml"));
             AnchorPane page = loader.load();
             Scene scene = new Scene(page);
 
@@ -285,6 +289,10 @@ public class PingController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void loadIpHistory() {
+        ipHistoryList.setAll(ipHistoryManager.loadHistory());
     }
 
     private void setupContextMenu() {
@@ -376,8 +384,11 @@ public class PingController {
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.initOwner(pingButton.getScene().getWindow());
 
-        TextField txtIpAddress = new TextField();
-        txtIpAddress.setPromptText("Digite o IP Address");
+        ComboBox<String> cmbIpAddress = new ComboBox<>(ipHistoryList);
+        cmbIpAddress.setEditable(true);
+        cmbIpAddress.setPromptText("Digite o IP Address");
+        cmbIpAddress.setMaxWidth(Double.MAX_VALUE);
+        cmbIpAddress.setVisibleRowCount(IP_HISTORY_LIMIT);
         CheckBox chkPingContinuo = new CheckBox("-t");
 
         Button btnPingTest = new Button("Enviar Ping Test");
@@ -385,7 +396,7 @@ public class PingController {
         Button btnCancelar = new Button("Cancelar");
 
         Runnable runPingTest = () -> {
-            String ipAddress = txtIpAddress.getText() == null ? "" : txtIpAddress.getText().trim();
+            String ipAddress = getIpAddressFromCombo(cmbIpAddress);
             if (!isValidIpv4(ipAddress)) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("IP invalido");
@@ -393,18 +404,22 @@ public class PingController {
                 alert.setContentText("Digite um endereco IPv4 valido. Exemplo: 10.0.0.1");
                 alert.initOwner(dialog);
                 alert.showAndWait();
-                txtIpAddress.requestFocus();
+                cmbIpAddress.requestFocus();
                 return;
             }
             PingUtils.runDefaultPingByIp(ipAddress, chkPingContinuo.isSelected());
+            ipHistoryManager.addIp(ipAddress);
+            loadIpHistory();
+            cmbIpAddress.setItems(ipHistoryList);
+            cmbIpAddress.setValue(ipAddress);
         };
 
         btnPingTest.setOnAction(_ -> runPingTest.run());
-        txtIpAddress.setOnAction(_ -> runPingTest.run());
+        cmbIpAddress.getEditor().setOnAction(_ -> runPingTest.run());
 
         btnLimpar.setOnAction(_ -> {
-            txtIpAddress.clear();
-            txtIpAddress.requestFocus();
+            cmbIpAddress.getEditor().clear();
+            cmbIpAddress.requestFocus();
         });
 
         btnCancelar.setOnAction(_ -> dialog.close());
@@ -412,14 +427,28 @@ public class PingController {
         HBox buttonBox = new HBox(10, btnPingTest, btnLimpar, btnCancelar);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox root = new VBox(12, new Label("IP Address:"), txtIpAddress, chkPingContinuo, buttonBox);
+        VBox root = new VBox(12, new Label("IP Address:"), cmbIpAddress, chkPingContinuo, buttonBox);
         root.setPadding(new Insets(12));
 
-        Scene scene = new Scene(root, 430, 175);
+        Scene scene = new Scene(root, 430, 180);
         dialog.setScene(scene);
         dialog.setResizable(false);
         dialog.show();
-        txtIpAddress.requestFocus();
+        if (!ipHistoryList.isEmpty()) {
+            cmbIpAddress.setValue(ipHistoryList.getFirst());
+            cmbIpAddress.getEditor().selectAll();
+        }
+        cmbIpAddress.requestFocus();
+    }
+
+    private String getIpAddressFromCombo(ComboBox<String> cmbIpAddress) {
+        String editorText = cmbIpAddress.getEditor().getText();
+        if (editorText != null && !editorText.isBlank()) {
+            return editorText.trim();
+        }
+
+        String selectedValue = cmbIpAddress.getValue();
+        return selectedValue == null ? "" : selectedValue.trim();
     }
 
     private boolean isValidIpv4(String ipAddress) {

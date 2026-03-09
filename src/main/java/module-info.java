@@ -3,6 +3,7 @@ module com.nuapps.ivping {
     requires javafx.fxml;
     requires java.desktop;
     requires java.logging;
+    requires java.prefs;
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;
 

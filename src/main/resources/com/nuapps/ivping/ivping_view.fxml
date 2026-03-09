@@ -84,7 +84,7 @@
                         <Tooltip text="SSH (Ctrl+H)" />
                     </tooltip></Button>
                 <Separator visible="false" />
-                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="pesquisar..." stylesheets="@MyTheme.css" />
+                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="pesquisar..." stylesheets="@my_theme.css" />
 
                 <Button mnemonicParsing="false" onAction="#clearTextField" style="-fx-font-size: 14px; -fx-text-fill: gray;" text="✖">
                     <tooltip>
@@ -140,7 +140,7 @@
         </VBox>
     </top>
     <center>
-        <TableView fx:id="tableView" editable="true" stylesheets="@MyTheme.css" BorderPane.alignment="CENTER">
+        <TableView fx:id="tableView" editable="true" stylesheets="@my_theme.css" BorderPane.alignment="CENTER">
             <columns>
                 <TableColumn fx:id="hostNameTableColumn" text="  Host Name" />
                 <TableColumn fx:id="ipAddressTableColumn" text="  IP Address" />

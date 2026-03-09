@@ -14,7 +14,7 @@ public class MainApp extends Application {
     public void start(Stage stage) throws IOException {
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ivp_icon.png"))));
 
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ivping-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ivping_view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 522);
 
         stage.setTitle("Ivping");
