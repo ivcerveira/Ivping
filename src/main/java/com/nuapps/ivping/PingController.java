@@ -29,6 +29,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.awt.*;
 import java.io.IOException;
@@ -46,6 +47,7 @@ public class PingController {
     private final ObservableList<String> ipHistoryList = FXCollections.observableArrayList();
     private final BrowserService browserService = AppFactory.browserService();
     private final IpHistoryManager ipHistoryManager = new IpHistoryManager(IP_HISTORY_LIMIT);
+    private boolean exitConfirmed;
 
     public Button pingButton;
     
@@ -156,8 +158,26 @@ public class PingController {
                 }));
     }
 
+    public void configureCloseConfirmation(Stage stage) {
+        stage.setOnCloseRequest(this::handleWindowCloseRequest);
+    }
+
+    private void handleWindowCloseRequest(WindowEvent event) {
+        if (exitConfirmed) {
+            return;
+        }
+
+        event.consume();
+        handleCloseApp();
+    }
+
     @FXML
     private void handleCloseApp() {
+        if (exitConfirmed) {
+            javafx.application.Platform.exit();
+            return;
+        }
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmar saída");
         alert.setHeaderText(null);
@@ -169,6 +189,7 @@ public class PingController {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
+                exitConfirmed = true;
                 javafx.application.Platform.exit();
             }
         });

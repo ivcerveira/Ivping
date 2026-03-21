@@ -16,9 +16,11 @@ public class MainApp extends Application {
 
         FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ivping_view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 522);
+        PingController controller = fxmlLoader.getController();
 
         stage.setTitle("Ivping");
         stage.setScene(scene);
+        controller.configureCloseConfirmation(stage);
         stage.show();
     }
 }
