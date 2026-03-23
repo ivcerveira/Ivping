@@ -295,7 +295,7 @@ public class PingController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Sobre");
         alert.setHeaderText("Ivping");
-        alert.setContentText("Autor: Ivaldo Lima");
+        alert.setContentText("Autor: Ivaldo Cerveira");
 
         // pega o Stage da janela principal (a que contém o TableView)
         Stage owner = (Stage) tableView.getScene().getWindow();
@@ -483,20 +483,5 @@ public class PingController {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(ipAddress);
         return matcher.matches();
-
-//        String[] parts = ipAddress.split("\\.");
-//        if (parts.length != 4) {
-//            return false;
-//        }
-//
-//        for (String part : parts) {
-//            if (!part.matches("\\d{1,3}")) {
-//                return false;
-//            }
-//            int value = Integer.parseInt(part);
-//            if (value < 0 || value > 255) {
-//                return false;
-//            }
-//        }
     }
 }
