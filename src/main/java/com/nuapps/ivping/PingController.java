@@ -38,6 +38,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PingController {
     private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
@@ -476,22 +478,25 @@ public class PingController {
         if (ipAddress == null || ipAddress.isBlank()) {
             return false;
         }
+        String zeroTo255 = "(\\d{1,2}|([01])\\" + "d{2}|2[0-4]\\d|25[0-5])";
+        String regex = zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255;
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(ipAddress);
+        return matcher.matches();
 
-        String[] parts = ipAddress.split("\\.");
-        if (parts.length != 4) {
-            return false;
-        }
-
-        for (String part : parts) {
-            if (!part.matches("\\d{1,3}")) {
-                return false;
-            }
-            int value = Integer.parseInt(part);
-            if (value < 0 || value > 255) {
-                return false;
-            }
-        }
-
-        return true;
+//        String[] parts = ipAddress.split("\\.");
+//        if (parts.length != 4) {
+//            return false;
+//        }
+//
+//        for (String part : parts) {
+//            if (!part.matches("\\d{1,3}")) {
+//                return false;
+//            }
+//            int value = Integer.parseInt(part);
+//            if (value < 0 || value > 255) {
+//                return false;
+//            }
+//        }
     }
 }
