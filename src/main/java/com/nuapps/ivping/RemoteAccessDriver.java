@@ -1,6 +1,11 @@
 package com.nuapps.ivping;
 
+import com.nuapps.ivping.config.AppConfig;
+import com.nuapps.ivping.config.AppConfigException;
+import com.nuapps.ivping.config.AppFactory;
+import com.nuapps.ivping.constants.ConfigKeys;
 import com.nuapps.ivping.model.HostData;
+import com.nuapps.ivping.util.AlertUtils;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableView;
@@ -11,8 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class RemoteAccessDriver {
-    private static final String BASE_URL = "https://s6006as3039.petrobras.biz/cgi-bin/";
-
     public enum AccessType {
         SSH("ssh.sh", "^(SW\\d|RT).*$"),
         TELNET("telnet.sh", "^(SW\\d|RT).*$");
@@ -54,8 +57,17 @@ public class RemoteAccessDriver {
             return;
         }
 
-        String uri = BASE_URL + accessType.getScriptName() + "?" + hostName;
-        Desktop.getDesktop().browse(new URI(uri));
+        try {
+            AppConfig appConfig = AppFactory.appConfig();
+            String baseUrl = appConfig.getRequired(ConfigKeys.REMOTE_ACCESS_BASE_URL);
+            String uri = baseUrl + accessType.getScriptName() + "?" + hostName;
+            Desktop.getDesktop().browse(new URI(uri));
+        } catch (AppConfigException e) {
+            AlertUtils.showError(
+                    "Configuracao invalida",
+                    e.getMessage()
+            );
+        }
     }
 
     private static void showWarning(TableView<HostData> tableView) {

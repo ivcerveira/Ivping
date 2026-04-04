@@ -8,4 +8,5 @@ public final class ConfigKeys {
     public static final String CISCOPRIME_URL = "ciscoprime.url";
     public static final String ZABBIX_URL = "zabbix.url";
     public static final String SIGMON_URL = "sigmon.url";
+    public static final String REMOTE_ACCESS_BASE_URL = "remoteaccess.baseurl";
 }
