@@ -1,4 +1,4 @@
-package com.nuapps.ivping;
+package com.nuapps.ivping.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;

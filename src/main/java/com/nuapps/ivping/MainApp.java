@@ -1,5 +1,6 @@
 package com.nuapps.ivping;
 
+import com.nuapps.ivping.controller.PingController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

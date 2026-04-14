@@ -1,5 +1,6 @@
-package com.nuapps.ivping;
+package com.nuapps.ivping.controller;
 
+import com.nuapps.ivping.*;
 import com.nuapps.ivping.config.AppConfig;
 import com.nuapps.ivping.config.AppConfigException;
 import com.nuapps.ivping.config.AppFactory;
@@ -38,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -227,7 +229,9 @@ public class PingController {
     private void showSearchMoreOptionsDialog() {
         try {
             searchTextField.clear();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("search_more_options_dialog.fxml"));
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
+                    PingController.class.getResource("/com/nuapps/ivping/search_more_options_dialog.fxml")
+            ));
             AnchorPane page = loader.load();
             Scene scene = new Scene(page);
 

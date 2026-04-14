@@ -10,4 +10,6 @@ module com.nuapps.ivping {
     opens com.nuapps.ivping to javafx.fxml;
     exports com.nuapps.ivping;
     exports com.nuapps.ivping.model;
+    exports com.nuapps.ivping.controller;
+    opens com.nuapps.ivping.controller to javafx.fxml;
 }
