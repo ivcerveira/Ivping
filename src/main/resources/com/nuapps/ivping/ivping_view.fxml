@@ -84,7 +84,7 @@
                         <Tooltip text="SSH (Ctrl+H)" />
                     </tooltip></Button>
                 <Separator visible="false" />
-                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="pesquisar..." stylesheets="@my_theme.css" />
+                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />
 
                 <Button mnemonicParsing="false" onAction="#clearTextField" style="-fx-font-size: 14px; -fx-text-fill: gray;" text="✖">
                     <tooltip>

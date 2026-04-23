@@ -25,6 +25,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -97,6 +98,7 @@ public class PingController {
 
         setupSearchFilter();
         setupContextMenu();
+        setupKeyboardActions();
         loadIpHistory();
 
         tmnButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.TMN_URL));
@@ -326,6 +328,9 @@ public class PingController {
         ContextMenu contextMenu = new ContextMenu();
 
         contextMenu.getItems().addAll(
+                getPingItem(),
+                getSshItem(),
+                new SeparatorMenuItem(),
                 getCopyHostnameItem(),
                 getCopyIpItem(),
                 getCopyLocationItem()
@@ -341,6 +346,34 @@ public class PingController {
             });
             return row;
         });
+    }
+
+    private void setupKeyboardActions() {
+        tableView.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER
+                    && !tableView.getSelectionModel().getSelectedItems().isEmpty()) {
+                pingSelectedHost();
+                event.consume();
+            }
+        });
+    }
+
+    private MenuItem getPingItem() {
+        MenuItem pingItem = new MenuItem("Ping");
+        pingItem.setOnAction(_ -> pingSelectedHost());
+        return pingItem;
+    }
+
+    private MenuItem getSshItem() {
+        MenuItem sshItem = new MenuItem("SSH");
+        sshItem.setOnAction(_ -> {
+            try {
+                openSSHSession();
+            } catch (URISyntaxException | IOException exception) {
+                showErrorDialog("Erro", exception.getMessage());
+            }
+        });
+        return sshItem;
     }
 
     private MenuItem getCopyIpItem() {
@@ -489,3 +522,9 @@ public class PingController {
         return matcher.matches();
     }
 }
+
+/*
+Últimas modificações realizadas - em 19/04:
+- Ping e SSH no menu de contexto
+- Teclar Enter para pingar
+ */
