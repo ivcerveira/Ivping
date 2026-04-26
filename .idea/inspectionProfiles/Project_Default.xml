@@ -2,6 +2,25 @@
   <profile version="1.0">
     <option name="myName" value="Project Default" />
     <inspection_tool class="ClassCanBeRecord" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+    <inspection_tool class="CssUnknownProperty" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myCustomPropertiesEnabled" value="true" />
+      <option name="myIgnoreVendorSpecificProperties" value="false" />
+      <option name="myCustomPropertiesList">
+        <value>
+          <list size="9">
+            <item index="0" class="java.lang.String" itemvalue="-fx-alignment" />
+            <item index="1" class="java.lang.String" itemvalue="-fx-background-color" />
+            <item index="2" class="java.lang.String" itemvalue="-fx-text-fill" />
+            <item index="3" class="java.lang.String" itemvalue="-fx-prompt-text-fill" />
+            <item index="4" class="java.lang.String" itemvalue="-fx-background-radius" />
+            <item index="5" class="java.lang.String" itemvalue="-fx-border-color" />
+            <item index="6" class="java.lang.String" itemvalue="-fx-border-radius" />
+            <item index="7" class="java.lang.String" itemvalue="-fx-highlight-fill" />
+            <item index="8" class="java.lang.String" itemvalue="-fx-highlight-text-fill" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
     <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
       <option name="processCode" value="true" />
       <option name="processLiterals" value="true" />

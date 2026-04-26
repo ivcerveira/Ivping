@@ -18,7 +18,8 @@ import java.net.URISyntaxException;
 public class RemoteAccessDriver {
     public enum AccessType {
         SSH("ssh.sh", "^(SW\\d|RT).*$"),
-        TELNET("telnet.sh", "^(SW\\d|RT).*$");
+        //TELNET("telnet.sh", "^(SW\\d|RT).*$");
+        TELNET("telnet.sh", "^(SW\\d).*$");
 
         private final String scriptName;
         private final String hostPattern;

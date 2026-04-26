@@ -3,6 +3,17 @@
 }
 
 .text-field {
-    -fx-base: rgb(77, 208, 225);
-    -fx-background: rgb(225, 228, 203);
+    -fx-background-color: rgb(225, 228, 203);
+    -fx-text-fill: rgb(33, 37, 41);
+    -fx-prompt-text-fill: rgba(33, 37, 41, 0.55);
+    -fx-background-radius: 4;
+    -fx-border-color: rgb(77, 208, 225);
+    -fx-border-radius: 4;
+    -fx-highlight-fill: rgb(77, 208, 225);
+    -fx-highlight-text-fill: white;
+}
+
+.text-field:focused {
+    -fx-background-color: rgb(225, 228, 203);
+    -fx-border-color: rgb(38, 166, 154);
 }
