@@ -9,6 +9,7 @@ import com.nuapps.ivping.util.AlertUtils;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableView;
+import javafx.stage.Modality;
 
 import java.awt.Desktop;
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class RemoteAccessDriver {
             throws URISyntaxException, IOException {
 
         if (tableView.getSelectionModel().getSelectedIndex() < 0) {
+            showNoHostSelectedWarning(tableView, accessType);
             return;
         }
 
@@ -82,5 +84,26 @@ public class RemoteAccessDriver {
         }
 
         alert.showAndWait();
+    }
+
+    private static void showNoHostSelectedWarning(TableView<HostData> tableView, AccessType accessType) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Aviso");
+        alert.setHeaderText(null);
+        alert.setContentText(getNoHostSelectedMessage(accessType));
+
+        if (tableView.getScene() != null && tableView.getScene().getWindow() != null) {
+            alert.initOwner(tableView.getScene().getWindow());
+            alert.initModality(Modality.WINDOW_MODAL);
+        }
+
+        alert.showAndWait();
+    }
+
+    private static String getNoHostSelectedMessage(AccessType accessType) {
+        return switch (accessType) {
+            case SSH -> "Por favor, selecione um Host na tabela antes de abrir a conexão SSH.";
+            case TELNET -> "Por favor, selecione um Host na tabela antes de abrir a conexão Telnet.";
+        };
     }
 }

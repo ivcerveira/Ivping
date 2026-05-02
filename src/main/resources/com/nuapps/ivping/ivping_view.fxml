@@ -21,8 +21,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.nuapps.ivping.controller.PingController">
+<BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nuapps.ivping.controller.PingController">
     <top>
         <VBox BorderPane.alignment="CENTER">
             <MenuBar BorderPane.alignment="CENTER">
@@ -41,7 +40,7 @@
                     </MenuItem>
                     <MenuItem onAction="#openSSHSession" text="SS_H">
                         <accelerator>
-                            <KeyCodeCombination alt="UP" code="H" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                            <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                         </accelerator>
                     </MenuItem>
                     <MenuItem onAction="#openTelnetSession" text="_Telnet">

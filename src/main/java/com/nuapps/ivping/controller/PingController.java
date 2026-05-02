@@ -205,10 +205,13 @@ public class PingController {
     private void pingSelectedHost() {
         ObservableList<HostData> selectedHostData = tableView.getSelectionModel().getSelectedItems();
 
-        if (!selectedHostData.isEmpty()) {
-            boolean continuous = chkPingContinuous.isSelected();
-            selectedHostData.forEach(hostData -> PingUtils.runPing(hostData, continuous, tableView));
+        if (selectedHostData.isEmpty()) {
+            showNoHostSelectedWarning("Por favor, selecione um Host na tabela antes de enviar o Ping.");
+            return;
         }
+
+        boolean continuous = chkPingContinuous.isSelected();
+        selectedHostData.forEach(hostData -> PingUtils.runPing(hostData, continuous, tableView));
     }
 
     @FXML
@@ -320,6 +323,20 @@ public class PingController {
         alert.showAndWait();
     }
 
+    private void showNoHostSelectedWarning(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Aviso");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+
+        if (tableView.getScene() != null && tableView.getScene().getWindow() != null) {
+            alert.initOwner(tableView.getScene().getWindow());
+            alert.initModality(Modality.WINDOW_MODAL);
+        }
+
+        alert.showAndWait();
+    }
+
     private void loadIpHistory() {
         ipHistoryList.setAll(ipHistoryManager.loadHistory());
     }
@@ -350,8 +367,7 @@ public class PingController {
 
     private void setupKeyboardActions() {
         tableView.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER
-                    && !tableView.getSelectionModel().getSelectedItems().isEmpty()) {
+            if (event.getCode() == KeyCode.ENTER) {
                 pingSelectedHost();
                 event.consume();
             }
