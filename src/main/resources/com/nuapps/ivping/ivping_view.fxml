@@ -21,7 +21,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nuapps.ivping.controller.PingController">
+<BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.nuapps.ivping.controller.PingController">
     <top>
         <VBox BorderPane.alignment="CENTER">
             <MenuBar BorderPane.alignment="CENTER">
@@ -142,9 +143,9 @@
     <center>
         <TableView fx:id="tableView" editable="true" stylesheets="@my_theme.css" BorderPane.alignment="CENTER">
             <columns>
-                <TableColumn fx:id="hostNameTableColumn" text="  Host Name" />
-                <TableColumn fx:id="ipAddressTableColumn" text="  IP Address" />
-                <TableColumn fx:id="locationTableColumn" text="  Device Location" />
+                <TableColumn fx:id="hostNameTableColumn" text="Host Name" />
+                <TableColumn fx:id="ipAddressTableColumn" text="IP Address" />
+                <TableColumn fx:id="locationTableColumn" text="Device Location" />
             </columns>
             <columnResizePolicy>
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

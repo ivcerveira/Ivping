@@ -16,7 +16,8 @@ public class MainApp extends Application {
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/ivp_icon.png"))));
 
         FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ivping_view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1000, 522);
+        //Scene scene = new Scene(fxmlLoader.load(), 1000, 522);
+        Scene scene = new Scene(fxmlLoader.load(), 1050, 602);
         PingController controller = fxmlLoader.getController();
 
         stage.setTitle("Ivping");

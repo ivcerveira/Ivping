@@ -1,7 +1,4 @@
-.table-view .column-header .label {
-    -fx-alignment: center-left;
-}
-
+/*noinspection ALL,CssUnusedSymbol*/
 .text-field {
     -fx-background-color: rgb(225, 228, 203);
     -fx-text-fill: rgb(33, 37, 41);
@@ -13,7 +10,13 @@
     -fx-highlight-text-fill: white;
 }
 
+/*noinspection ALL*/
 .text-field:focused {
     -fx-background-color: rgb(225, 228, 203);
     -fx-border-color: rgb(38, 166, 154);
+}
+
+/*noinspection ALL*/
+.table-view .column-header .label {
+    -fx-alignment: center-left;
 }
