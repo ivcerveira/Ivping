@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExcelHostLoader {
-
     private static final String DATA_FOLDER = "Ivping_data";
     private static final String EXCEL_FILE_NAME = "data_hosts.xlsx";
 
@@ -26,7 +25,6 @@ public class ExcelHostLoader {
 
         try (FileInputStream fis = new FileInputStream(excelFile);
              Workbook workbook = new XSSFWorkbook(fis)) {
-
             Sheet sheet = workbook.getSheetAt(0);
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {

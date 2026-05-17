@@ -1,6 +1,9 @@
 package com.nuapps.ivping.controller;
 
-import com.nuapps.ivping.*;
+import com.nuapps.ivping.ExcelHostLoader;
+import com.nuapps.ivping.IpHistoryManager;
+import com.nuapps.ivping.PingUtils;
+import com.nuapps.ivping.RemoteAccessDriver;
 import com.nuapps.ivping.config.AppConfig;
 import com.nuapps.ivping.config.AppConfigException;
 import com.nuapps.ivping.config.AppFactory;
@@ -39,31 +42,29 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Predicate;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PingController {
+public class IvpingController {
     private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
     private static final int IP_HISTORY_LIMIT = 10;
 
-    private final ObservableList<HostData> hostDataList = FXCollections.observableArrayList();
+    private final ObservableList<HostData> dataList = FXCollections.observableArrayList();
     private final ObservableList<String> ipHistoryList = FXCollections.observableArrayList();
     private final BrowserService browserService = AppFactory.browserService();
     private final IpHistoryManager ipHistoryManager = new IpHistoryManager(IP_HISTORY_LIMIT);
-    private boolean exitConfirmed;
-
     public Button pingButton;
-    
+    private boolean exitConfirmed;
     @FXML
     private TableView<HostData> tableView;
     @FXML
-    private TableColumn<HostData, String> hostNameTableColumn;
+    private TableColumn<HostData, String> colHost;
     @FXML
-    private TableColumn<HostData, String> ipAddressTableColumn;
+    private TableColumn<HostData, String> colIp;
     @FXML
-    private TableColumn<HostData, String> locationTableColumn;
+    private TableColumn<HostData, String> colLocation;
     @FXML
     private CheckBox chkPingContinuous;
     @FXML
@@ -83,16 +84,15 @@ public class PingController {
         setupTableColumns();
 
         ExcelHostLoader excelLoader = new ExcelHostLoader();
-        hostDataList.addAll(excelLoader.loadHosts());
-
-        filteredData = new FilteredList<>(hostDataList, _ -> true);
+        dataList.addAll(excelLoader.loadHosts());
+        filteredData = new FilteredList<>(dataList, _ -> true);
 
         SortedList<HostData> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(tableView.comparatorProperty());
         tableView.setItems(sortedData);
 
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        if (!hostDataList.isEmpty()) {
+        if (!dataList.isEmpty()) {
             tableView.getSelectionModel().selectFirst();
         }
 
@@ -130,18 +130,18 @@ public class PingController {
     }
 
     private void setupTableColumns() {
-        hostNameTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().hostName()));
-        ipAddressTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
-        locationTableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
+        colHost.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().hostName()));
+        colIp.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
+        colLocation.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
 
-        hostNameTableColumn.setPrefWidth(170);
-        ipAddressTableColumn.setPrefWidth(150);
+        colHost.setPrefWidth(170);
+        colIp.setPrefWidth(150);
 
         tableView.widthProperty().addListener((_, _, newWidth) -> {
             double tableWidth = newWidth.doubleValue();
-            double remainingWidth = tableWidth - (hostNameTableColumn.getWidth() + ipAddressTableColumn.getWidth());
+            double remainingWidth = tableWidth - (colHost.getWidth() + colIp.getWidth());
             if (remainingWidth > 0) {
-                locationTableColumn.setPrefWidth(remainingWidth);
+                colLocation.setPrefWidth(remainingWidth);
             }
         });
     }
@@ -202,11 +202,11 @@ public class PingController {
     }
 
     @FXML
-    private void pingSelectedHost() {
+    private void onPingClicked() {
         ObservableList<HostData> selectedHostData = tableView.getSelectionModel().getSelectedItems();
 
         if (selectedHostData.isEmpty()) {
-            showNoHostSelectedWarning("Por favor, selecione um Host na tabela antes de enviar o Ping.");
+            showNoHostSelectedWarning();
             return;
         }
 
@@ -235,7 +235,7 @@ public class PingController {
         try {
             searchTextField.clear();
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                    PingController.class.getResource("/com/nuapps/ivping/search_more_options_dialog.fxml")
+                    IvpingController.class.getResource("/com/nuapps/ivping/search_more_options_dialog.fxml")
             ));
             AnchorPane page = loader.load();
             Scene scene = new Scene(page);
@@ -323,11 +323,11 @@ public class PingController {
         alert.showAndWait();
     }
 
-    private void showNoHostSelectedWarning(String message) {
+    private void showNoHostSelectedWarning() {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Aviso");
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setContentText("Por favor, selecione um Host na tabela antes de enviar o Ping.");
 
         if (tableView.getScene() != null && tableView.getScene().getWindow() != null) {
             alert.initOwner(tableView.getScene().getWindow());
@@ -368,7 +368,7 @@ public class PingController {
     private void setupKeyboardActions() {
         tableView.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
-                pingSelectedHost();
+                onPingClicked();
                 event.consume();
             }
         });
@@ -376,7 +376,7 @@ public class PingController {
 
     private MenuItem getPingItem() {
         MenuItem pingItem = new MenuItem("Ping");
-        pingItem.setOnAction(_ -> pingSelectedHost());
+        pingItem.setOnAction(_ -> onPingClicked());
         return pingItem;
     }
 
@@ -538,9 +538,3 @@ public class PingController {
         return matcher.matches();
     }
 }
-
-/*
-Últimas modificações realizadas - em 19/04:
-- Ping e SSH no menu de contexto
-- Teclar Enter para pingar
- */

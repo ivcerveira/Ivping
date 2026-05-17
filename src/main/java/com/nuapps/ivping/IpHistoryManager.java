@@ -9,7 +9,6 @@ import java.util.prefs.Preferences;
 
 public class IpHistoryManager {
     private static final String PREFERENCE_KEY = "ping.ip.history";
-
     private final Preferences preferences;
     private final int maxSize;
 
