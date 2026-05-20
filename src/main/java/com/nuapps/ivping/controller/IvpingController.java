@@ -44,10 +44,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IvpingController {
+    private static final Logger LOGGER = Logger.getLogger(IvpingController.class.getName());
     private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
     private static final int IP_HISTORY_LIMIT = 10;
 
@@ -124,8 +127,7 @@ public class IvpingController {
                     "Erro",
                     "Não foi possível abrir a URL configurada."
             );
-            //noinspection CallToPrintStackTrace
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Não foi possível abrir a URL configurada.", e);
         }
     }
 
