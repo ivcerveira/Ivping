@@ -74,9 +74,9 @@ public class RemoteAccessDriver {
 
     private static void showWarning(TableView<HostData> tableView) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Conexão SSH não disponível");
+        alert.setTitle("Conexão SSH/Telnet não disponível");
         alert.setHeaderText(null);
-        alert.setContentText("Apenas equipamentos de rede (SW/RT) suportam acesso SSH.");
+        alert.setContentText("Apenas equipamentos de rede (SW/RT) suportam acesso SSH/Telnet.");
 
         if (tableView.getScene() != null && tableView.getScene().getWindow() != null) {
             alert.initOwner(tableView.getScene().getWindow());
