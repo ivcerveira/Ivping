@@ -30,6 +30,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -44,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -479,9 +481,9 @@ public class IvpingController {
             String ipAddress = getIpAddressFromCombo(cmbIpAddress);
             if (!isValidIpv4(ipAddress)) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("IP invalido");
+                alert.setTitle("IP inválido");
                 alert.setHeaderText(null);
-                alert.setContentText("Digite um endereco IPv4 valido. Exemplo: 10.0.0.1");
+                alert.setContentText("Digite um endereço IPv4 válido. Exemplo: 10.0.0.1");
                 alert.initOwner(dialog);
                 alert.showAndWait();
                 cmbIpAddress.requestFocus();
@@ -496,7 +498,6 @@ public class IvpingController {
         };
 
         btnPingTest.setOnAction(_ -> runPingTest.run());
-        cmbIpAddress.getEditor().setOnAction(_ -> runPingTest.run());
 
         btnLimpar.setOnAction(_ -> {
             cmbIpAddress.getEditor().clear();
@@ -512,6 +513,8 @@ public class IvpingController {
         root.setPadding(new Insets(12));
 
         Scene scene = new Scene(root, 430, 180);
+        installPingOnEnter(scene, cmbIpAddress, runPingTest);
+        installCancelOnEscape(scene, btnCancelar);
         dialog.setScene(scene);
         dialog.setResizable(false);
         dialog.show();
@@ -520,6 +523,39 @@ public class IvpingController {
             positionIpAddressCaretAtEnd(cmbIpAddress);
         }
         cmbIpAddress.requestFocus();
+    }
+
+    private void installCancelOnEscape(Scene scene, Button btnCancelar) {
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                btnCancelar.fire();
+                event.consume();
+            }
+        });
+    }
+
+    private void installPingOnEnter(Scene scene, ComboBox<String> cmbIpAddress, Runnable runPingTest) {
+        AtomicBoolean enterPressedInApp = new AtomicBoolean();
+
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ENTER && isIpComboFocused(scene, cmbIpAddress)) {
+                enterPressedInApp.set(true);
+            }
+        });
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, event -> runPingTestOnEnter(event, runPingTest, enterPressedInApp));
+    }
+
+    private void runPingTestOnEnter(KeyEvent event, Runnable runPingTest, AtomicBoolean enterPressedInApp) {
+        if (event.getCode() == KeyCode.ENTER) {
+            event.consume();
+            if (enterPressedInApp.getAndSet(false)) {
+                runPingTest.run();
+            }
+        }
+    }
+
+    private boolean isIpComboFocused(Scene scene, ComboBox<String> cmbIpAddress) {
+        return scene.getFocusOwner() == cmbIpAddress || scene.getFocusOwner() == cmbIpAddress.getEditor();
     }
 
     private void positionIpAddressCaretAtEnd(ComboBox<String> cmbIpAddress) {
