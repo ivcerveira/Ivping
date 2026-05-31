@@ -11,6 +11,7 @@ import com.nuapps.ivping.constants.ConfigKeys;
 import com.nuapps.ivping.model.HostData;
 import com.nuapps.ivping.service.BrowserService;
 import com.nuapps.ivping.util.AlertUtils;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -467,6 +468,7 @@ public class IvpingController {
         cmbIpAddress.setPromptText("Digite o IP Address");
         cmbIpAddress.setMaxWidth(Double.MAX_VALUE);
         cmbIpAddress.setVisibleRowCount(IP_HISTORY_LIMIT);
+        cmbIpAddress.valueProperty().addListener((_, _, _) -> positionIpAddressCaretAtEnd(cmbIpAddress));
         CheckBox chkPingContinuo = new CheckBox("-t");
 
         Button btnPingTest = new Button("Enviar Ping Test");
@@ -483,6 +485,7 @@ public class IvpingController {
                 alert.initOwner(dialog);
                 alert.showAndWait();
                 cmbIpAddress.requestFocus();
+                positionIpAddressCaretAtEnd(cmbIpAddress);
                 return;
             }
             PingUtils.runDefaultPingByIp(ipAddress, chkPingContinuo.isSelected());
@@ -514,9 +517,18 @@ public class IvpingController {
         dialog.show();
         if (!ipHistoryList.isEmpty()) {
             cmbIpAddress.setValue(ipHistoryList.getFirst());
-            cmbIpAddress.getEditor().selectAll();
+            positionIpAddressCaretAtEnd(cmbIpAddress);
         }
         cmbIpAddress.requestFocus();
+    }
+
+    private void positionIpAddressCaretAtEnd(ComboBox<String> cmbIpAddress) {
+        Platform.runLater(() -> {
+            TextField editor = cmbIpAddress.getEditor();
+            String text = editor.getText();
+            editor.deselect();
+            editor.positionCaret(text == null ? 0 : text.length());
+        });
     }
 
     private String getIpAddressFromCombo(ComboBox<String> cmbIpAddress) {
