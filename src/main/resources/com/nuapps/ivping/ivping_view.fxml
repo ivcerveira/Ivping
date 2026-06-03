@@ -81,7 +81,7 @@
                         </ImageView>
                     </graphic>
                     <tooltip>
-                        <Tooltip text="SSH (Ctrl+H)" />
+                        <Tooltip text="SSH (Ctrl+S)" />
                     </tooltip></Button>
                 <Separator visible="false" />
                 <TextField fx:id="searchTextField" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />

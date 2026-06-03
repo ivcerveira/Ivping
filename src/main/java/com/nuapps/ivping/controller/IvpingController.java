@@ -36,6 +36,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 import java.awt.*;
@@ -463,7 +464,8 @@ public class IvpingController {
         Stage dialog = new Stage();
         dialog.setTitle("Ping por IP");
         dialog.initModality(Modality.WINDOW_MODAL);
-        dialog.initOwner(pingButton.getScene().getWindow());
+        Window owner = pingButton.getScene().getWindow();
+        dialog.initOwner(owner);
 
         ComboBox<String> cmbIpAddress = new ComboBox<>(ipHistoryList);
         cmbIpAddress.setEditable(true);
@@ -473,9 +475,12 @@ public class IvpingController {
         cmbIpAddress.valueProperty().addListener((_, _, _) -> positionIpAddressCaretAtEnd(cmbIpAddress));
         CheckBox chkPingContinuo = new CheckBox("-t");
 
-        Button btnPingTest = new Button("Enviar Ping Test");
-        Button btnLimpar = new Button("Limpar");
-        Button btnCancelar = new Button("Cancelar");
+        Button btnPingTest = new Button("_Enviar Ping Test");
+        Button btnLimpar = new Button("_Limpar");
+        Button btnCancelar = new Button("_Cancelar");
+        btnPingTest.setMnemonicParsing(true);
+        btnLimpar.setMnemonicParsing(true);
+        btnCancelar.setMnemonicParsing(true);
 
         Runnable runPingTest = () -> {
             String ipAddress = getIpAddressFromCombo(cmbIpAddress);
@@ -517,12 +522,31 @@ public class IvpingController {
         installCancelOnEscape(scene, btnCancelar);
         dialog.setScene(scene);
         dialog.setResizable(false);
+        centerStageOnOwner(dialog, owner, scene);
         dialog.show();
         if (!ipHistoryList.isEmpty()) {
             cmbIpAddress.setValue(ipHistoryList.getFirst());
             positionIpAddressCaretAtEnd(cmbIpAddress);
         }
         cmbIpAddress.requestFocus();
+    }
+
+    private void centerStageOnOwner(Stage stage, Window owner, Scene scene) {
+        if (owner == null) {
+            return;
+        }
+
+        stage.sizeToScene();
+        double width = stage.getWidth();
+        double height = stage.getHeight();
+        if (Double.isNaN(width) || width <= 0) {
+            width = scene.getWidth();
+        }
+        if (Double.isNaN(height) || height <= 0) {
+            height = scene.getHeight();
+        }
+        stage.setX(owner.getX() + (owner.getWidth() - width) / 2);
+        stage.setY(owner.getY() + (owner.getHeight() - height) / 2);
     }
 
     private void installCancelOnEscape(Scene scene, Button btnCancelar) {
