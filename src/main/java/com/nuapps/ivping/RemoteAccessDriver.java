@@ -52,7 +52,7 @@ public class RemoteAccessDriver {
             return;
         }
 
-        String hostName = data.getFirst().hostName();
+        String hostName = data.getFirst().host();
 
         if (!hostName.matches(accessType.getHostPattern())) {
             showWarning(tableView);

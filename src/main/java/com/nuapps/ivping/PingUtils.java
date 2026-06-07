@@ -15,8 +15,8 @@ public class PingUtils {
     private static final String PING_DEFAULT = "@ping ";
 
     public static void runPing(HostData selectedHostData, boolean continuous, TableView<HostData> tableView) {
-        String hostName = selectedHostData.hostName();
-        String ipAddress = selectedHostData.ipAddress();
+        String hostName = selectedHostData.host();
+        String ipAddress = selectedHostData.ip();
         int lineNumber = tableView.getSelectionModel().getSelectedItems().indexOf(selectedHostData);
         String pingCommand = (continuous ? PING_T : PING_N) + ipAddress;
 

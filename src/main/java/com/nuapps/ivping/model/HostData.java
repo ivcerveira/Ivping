@@ -1,4 +1,4 @@
 package com.nuapps.ivping.model;
 
-public record HostData(String hostName, String ipAddress, String location) {
+public record HostData(String host, String ip, String location) {
 }

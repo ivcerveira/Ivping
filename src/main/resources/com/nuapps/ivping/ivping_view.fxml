@@ -84,23 +84,15 @@
                         <Tooltip text="SSH (Ctrl+S)" />
                     </tooltip></Button>
                 <Separator visible="false" />
-                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />
+<!--                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />-->
+                <TextField fx:id="txtSearch" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />
 
                 <Button mnemonicParsing="false" onAction="#clearTextField" style="-fx-font-size: 14px; -fx-text-fill: gray;" text="✖">
                     <tooltip>
                         <Tooltip text="Limpar" />
                     </tooltip></Button>
-                <Pane prefWidth="10.0" />
-
-                <Button mnemonicParsing="false" onAction="#showSearchMoreOptionsDialog">
-                    <tooltip>
-                        <Tooltip text="Pesquisar - Mais opções" />
-                    </tooltip>
-                    <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                            <Image url="@../../../images/Filter_Plus_16.png" />
-                        </ImageView>
-                    </graphic></Button>
+                <Pane prefWidth="4.0" />
+                <Button mnemonicParsing="false" onAction="#onAdvancedSearchClicked" text="Pesquisa Avançada" />
                 <Separator orientation="VERTICAL" />
                 <HBox alignment="CENTER_LEFT" spacing="6.0">
                     <Button fx:id="tmnButton" mnemonicParsing="false" text="TMN" textAlignment="CENTER">

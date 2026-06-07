@@ -18,7 +18,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -31,7 +30,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -45,9 +44,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -75,7 +72,7 @@ public class IvpingController {
     @FXML
     private CheckBox chkPingContinuous;
     @FXML
-    private TextField searchTextField;
+    private TextField txtSearch;
     private FilteredList<HostData> filteredData;
     @FXML
     private Button tmnButton;
@@ -85,14 +82,18 @@ public class IvpingController {
     private Button zabbixButton;
     @FXML
     private Button sigmonButton;
+    private String advancedSearchText1 = "";
+    private String advancedSearchText2 = "";
+    private boolean advancedSearchAnd = true;
 
     @FXML
     private void initialize() {
         setupTableColumns();
-
         ExcelHostLoader excelLoader = new ExcelHostLoader();
         dataList.addAll(excelLoader.loadHosts());
         filteredData = new FilteredList<>(dataList, _ -> true);
+
+        txtSearch.textProperty().addListener((_, _, _) -> applyFilters());
 
         SortedList<HostData> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(tableView.comparatorProperty());
@@ -103,7 +104,7 @@ public class IvpingController {
             tableView.getSelectionModel().selectFirst();
         }
 
-        setupSearchFilter();
+        //setupSearchFilter();
         setupContextMenu();
         setupKeyboardActions();
         loadIpHistory();
@@ -113,6 +114,123 @@ public class IvpingController {
         zabbixButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.ZABBIX_URL));
         sigmonButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.SIGMON_URL));
     }
+    @FXML
+    private void onAdvancedSearchClicked() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Filtro Personalizado");
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(tableView.getScene().getWindow());
+
+        Label title = new Label("Mostrar linhas onde qualquer coluna contenha:");
+
+        TextField txtFirstTerm = new TextField(advancedSearchText1);
+        txtFirstTerm.setPromptText("Primeiro texto");
+        TextField txtSecondTerm = new TextField(advancedSearchText2);
+        txtSecondTerm.setPromptText("Segundo texto");
+
+        RadioButton rbAnd = new RadioButton("E");
+        RadioButton rbOr = new RadioButton("Ou");
+        ToggleGroup logicalGroup = new ToggleGroup();
+        rbAnd.setToggleGroup(logicalGroup);
+        rbOr.setToggleGroup(logicalGroup);
+        rbAnd.setSelected(advancedSearchAnd);
+        rbOr.setSelected(!advancedSearchAnd);
+
+        GridPane form = new GridPane();
+        form.setHgap(10);
+        form.setVgap(10);
+        form.add(new Label("Texto 1:"), 0, 0);
+        form.add(txtFirstTerm, 1, 0);
+        form.add(new Label("Texto 2:"), 0, 1);
+        form.add(txtSecondTerm, 1, 1);
+
+        Button btnOk = new Button("OK");
+        Button btnClear = new Button("Limpar");
+        Button btnCancel = new Button("Cancelar");
+        double buttonWidth = 80;
+        btnOk.setPrefWidth(buttonWidth);
+        btnClear.setPrefWidth(buttonWidth);
+        btnCancel.setPrefWidth(buttonWidth);
+
+        Runnable applyAdvancedSearch = () -> {
+            txtSearch.clear();
+            advancedSearchText1 = normalizeSearchText(txtFirstTerm.getText());
+            advancedSearchText2 = normalizeSearchText(txtSecondTerm.getText());
+            advancedSearchAnd = rbAnd.isSelected();
+            applyFilters();
+            dialog.close();
+        };
+
+        btnOk.setOnAction(_ -> applyAdvancedSearch.run());
+        txtFirstTerm.setOnAction(_ -> applyAdvancedSearch.run());
+        txtSecondTerm.setOnAction(_ -> applyAdvancedSearch.run());
+
+        btnClear.setOnAction(_ -> {
+            txtFirstTerm.clear();
+            txtSecondTerm.clear();
+            clearAdvancedSearch();
+            txtFirstTerm.requestFocus();
+        });
+
+        btnCancel.setOnAction(_ -> dialog.close());
+
+        HBox logicalBox = new HBox(16, rbAnd, rbOr);
+        HBox buttonBox = new HBox(10, btnOk, btnClear, btnCancel);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        VBox root = new VBox(12, title, form, logicalBox, buttonBox);
+        root.setPadding(new Insets(12));
+
+        Scene scene = new Scene(root, 460, 210);
+        dialog.setScene(scene);
+        dialog.setResizable(false);
+        dialog.show();
+        txtFirstTerm.requestFocus();
+    }
+    private void applyFilters() {
+        filteredData.setPredicate(hostData -> matchesSimpleSearch(hostData) && matchesAdvancedSearch(hostData));
+    }
+
+    private boolean matchesSimpleSearch(HostData hostData) {
+        String searchText = normalizeSearchText(txtSearch.getText());
+        return searchText.isBlank() || containsInAnyColumn(hostData, searchText);
+    }
+
+    private boolean matchesAdvancedSearch(HostData hostData) {
+        boolean hasFirstTerm = !advancedSearchText1.isBlank();
+        boolean hasSecondTerm = !advancedSearchText2.isBlank();
+
+        if (!hasFirstTerm && !hasSecondTerm) {
+            return true;
+        }
+
+        boolean firstTermMatches = !hasFirstTerm || containsInAnyColumn(hostData, advancedSearchText1);
+        boolean secondTermMatches = !hasSecondTerm || containsInAnyColumn(hostData, advancedSearchText2);
+
+        if (hasFirstTerm && hasSecondTerm) {
+            return advancedSearchAnd ? firstTermMatches && secondTermMatches : firstTermMatches || secondTermMatches;
+        }
+
+        return hasFirstTerm ? firstTermMatches : secondTermMatches;
+    }
+
+    private boolean containsInAnyColumn(HostData hostData, String searchText) {
+        return normalizeSearchText(hostData.host()).contains(searchText) ||
+                normalizeSearchText(hostData.ip()).contains(searchText) ||
+                normalizeSearchText(hostData.location()).contains(searchText);
+    }
+
+    private String normalizeSearchText(String text) {
+        return text == null ? "" : text.trim().toLowerCase();
+    }
+
+    private void clearAdvancedSearch() {
+        advancedSearchText1 = "";
+        advancedSearchText2 = "";
+        advancedSearchAnd = true;
+        applyFilters();
+    }
+
 
     private void openConfiguredUrl(String configKey) {
         try {
@@ -136,8 +254,8 @@ public class IvpingController {
     }
 
     private void setupTableColumns() {
-        colHost.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().hostName()));
-        colIp.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ipAddress()));
+        colHost.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().host()));
+        colIp.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().ip()));
         colLocation.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().location()));
 
         colHost.setPrefWidth(170);
@@ -150,24 +268,6 @@ public class IvpingController {
                 colLocation.setPrefWidth(remainingWidth);
             }
         });
-    }
-
-    private void setupSearchFilter() {
-        searchTextField.textProperty().addListener((_,
-                                                    _, newValue) -> filteredData.setPredicate
-                (hostData -> {
-                    if (newValue == null || newValue.isEmpty()) {
-                        return true;
-                    }
-                    String lowerCaseFilter = newValue.toLowerCase();
-
-                    if (hostData.hostName().toLowerCase().contains(lowerCaseFilter)) {
-                        return true;
-                    } else if (hostData.ipAddress().toLowerCase().contains(lowerCaseFilter)) {
-                        return true;
-                    } else
-                        return hostData.location().toLowerCase().contains(lowerCaseFilter);
-                }));
     }
 
     public void configureCloseConfirmation(Stage stage) {
@@ -232,77 +332,8 @@ public class IvpingController {
 
     @FXML
     private void clearTextField() {
-        searchTextField.clear();
-        searchTextField.requestFocus();
-    }
-
-    @FXML
-    private void showSearchMoreOptionsDialog() {
-        try {
-            searchTextField.clear();
-            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                    IvpingController.class.getResource("/com/nuapps/ivping/search_more_options_dialog.fxml")
-            ));
-            AnchorPane page = loader.load();
-            Scene scene = new Scene(page);
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Mostrar linhas que:");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-
-            Stage owner = (Stage) tableView.getScene().getWindow();
-            dialogStage.initOwner(owner);
-
-            dialogStage.setScene(scene);
-
-            SearchMoreOptionsDialogController ctrl = loader.getController();
-            ctrl.setSearchMoreOptionsDialogStage(dialogStage);
-
-            dialogStage.setResizable(false);
-            dialogStage.showAndWait();
-
-            if (ctrl.isOkClicked()) {
-                applyFilter(ctrl.getStringSearchField1(), ctrl.getStringSearchField2(),
-                        ctrl.getAndOrComboBox().getSelectionModel().getSelectedItem());
-            }
-            if (ctrl.isCancelClicked()) cancelClicked();
-
-        } catch (IOException exception) {
-            showErrorDialog("Error", exception.getMessage());
-        }
-    }
-
-    @FXML
-    private void applyFilter(String aux1, String aux2, String selectedItem) {
-        Predicate<HostData> p1 = host -> {
-            if (aux1 == null || aux1.isEmpty()) {
-                return true;
-            }
-            String lowerCaseFilter = aux1.toLowerCase();
-            return host.hostName().toLowerCase().contains(lowerCaseFilter) || host.ipAddress().toLowerCase().contains(lowerCaseFilter) || host.location().toLowerCase().contains(lowerCaseFilter);
-        };
-
-        Predicate<HostData> p2 = host -> {
-            if (aux2 == null || aux2.isEmpty()) {
-                return true;
-            }
-            String lowerCaseFilter = aux2.toLowerCase();
-            return host.hostName().toLowerCase().contains(lowerCaseFilter) || host.ipAddress().toLowerCase().contains(lowerCaseFilter) || host.location().toLowerCase().contains(lowerCaseFilter);
-        };
-
-        if (selectedItem.equals("E")) {
-            filteredData.setPredicate(p1.and(p2));
-        } else if (selectedItem.equals("OU")) {
-            filteredData.setPredicate(p1.or(p2));
-        } else {
-            showErrorDialog("Error", "Invalid selection");
-        }
-    }
-
-    @FXML
-    private void cancelClicked() {
-        Predicate<HostData> predicate = _ -> true;
-        filteredData.setPredicate(predicate);
+        txtSearch.clear();
+        txtSearch.requestFocus();
     }
 
     @FXML
@@ -403,7 +434,7 @@ public class IvpingController {
         copyIpItem.setOnAction(_ -> {
             HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                copyToClipboard(selected.ipAddress());
+                copyToClipboard(selected.ip());
             }
         });
         return copyIpItem;
@@ -414,7 +445,7 @@ public class IvpingController {
         copyHostItem.setOnAction(_ -> {
             HostData selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                copyToClipboard(selected.hostName());
+                copyToClipboard(selected.host());
             }
         });
         return copyHostItem;
