@@ -117,9 +117,11 @@ public class IvpingController {
     @FXML
     private void onAdvancedSearchClicked() {
         Stage dialog = new Stage();
-        dialog.setTitle("Filtro Personalizado");
+        //dialog.setTitle("Filtro Personalizado");
+        dialog.setTitle("Pesquisa Avançada");
         dialog.initModality(Modality.WINDOW_MODAL);
-        dialog.initOwner(tableView.getScene().getWindow());
+        Window owner = tableView.getScene().getWindow();
+        dialog.initOwner(owner);
 
         Label title = new Label("Mostrar linhas onde qualquer coluna contenha:");
 
@@ -184,6 +186,7 @@ public class IvpingController {
         Scene scene = new Scene(root, 460, 210);
         dialog.setScene(scene);
         dialog.setResizable(false);
+        centerStageOnOwner(dialog, owner, scene);
         dialog.show();
         txtFirstTerm.requestFocus();
     }
