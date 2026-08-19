@@ -16,6 +16,24 @@
     -fx-border-color: rgb(38, 166, 154);
 }
 
+.search-text-field {
+    -fx-padding: 4 30 4 7;
+}
+
+.clear-search-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 2 6;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: gray;
+    -fx-cursor: hand;
+}
+
+.clear-search-button:hover {
+    -fx-text-fill: rgb(33, 37, 41);
+}
+
 /*noinspection ALL*/
 .table-view .column-header .label {
     -fx-alignment: center-left;

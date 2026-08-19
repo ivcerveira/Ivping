@@ -42,6 +42,7 @@ public final class ConfigFileManager {
         properties.setProperty(ConfigKeys.CISCOPRIME_URL, "");
         properties.setProperty(ConfigKeys.ZABBIX_URL, "");
         properties.setProperty(ConfigKeys.SIGMON_URL, "");
+        properties.setProperty(ConfigKeys.GRAFANA_URL, "");
         properties.setProperty(ConfigKeys.REMOTE_ACCESS_BASE_URL, "");
 
         try (OutputStream outputStream = Files.newOutputStream(CONFIG_FILE)) {

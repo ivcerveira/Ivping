@@ -18,6 +18,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -85,12 +86,18 @@
                     </tooltip></Button>
                 <Separator visible="false" />
 <!--                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />-->
-                <TextField fx:id="txtSearch" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />
-
-                <Button mnemonicParsing="false" onAction="#clearTextField" style="-fx-font-size: 14px; -fx-text-fill: gray;" text="✖">
-                    <tooltip>
-                        <Tooltip text="Limpar" />
-                    </tooltip></Button>
+                <StackPane prefWidth="250.0" stylesheets="@my_theme.css">
+                    <TextField fx:id="txtSearch" maxWidth="Infinity" promptText="Pesquisar..." styleClass="search-text-field" />
+                    <Button focusTraversable="false" mnemonicParsing="false" onAction="#clearTextField"
+                            styleClass="clear-search-button" text="⌧" StackPane.alignment="CENTER_RIGHT">
+                        <StackPane.margin>
+                            <Insets right="4.0" />
+                        </StackPane.margin>
+                        <tooltip>
+                            <Tooltip text="Limpar" />
+                        </tooltip>
+                    </Button>
+                </StackPane>
                 <Pane prefWidth="4.0" />
                 <Button mnemonicParsing="false" onAction="#onAdvancedSearchClicked" text="Pesquisa Avançada" />
                 <Separator orientation="VERTICAL" />
@@ -127,6 +134,14 @@
                             <Tooltip text="Sigmon" />
                         </tooltip>
                     </Button>
+                    <Button fx:id="grafanaButton" mnemonicParsing="false" text="Grafana">
+                        <font>
+                            <Font name="System Bold" size="12.0" />
+                        </font>
+                        <tooltip>
+                            <Tooltip text="Grafana" />
+                        </tooltip>
+                    </Button>
                 </HBox>
             </ToolBar>
         </VBox>
@@ -144,3 +159,21 @@
         </TableView>
     </center>
 </BorderPane>
+
+<!--        Algumas opções Unicode, sem ícones ou dependências:-->
+<!--        •-->
+<!--        × — limpar/fechar; visualmente mais elegante que X-->
+<!--        •-->
+<!--        ✕ — versão um pouco mais destacada-->
+<!--        •-->
+<!--        ✖ — versão preenchida e mais pesada-->
+<!--        •-->
+<!--        ⌫ — apagar, semelhante à tecla Backspace-->
+<!--        •-->
+<!--        ⌧ — limpar conteúdo de um campo-->
+<!--        •-->
+<!--        ↺ — restaurar/reiniciar-->
+<!--        •-->
+<!--        ⟲ — redefinir pesquisa-->
+<!--        •-->
+<!--        – — remover, embora seja menos intuitivo-->

@@ -82,6 +82,8 @@ public class IvpingController {
     private Button zabbixButton;
     @FXML
     private Button sigmonButton;
+    @FXML
+    private Button grafanaButton;
     private String advancedSearchText1 = "";
     private String advancedSearchText2 = "";
     private boolean advancedSearchAnd = true;
@@ -104,7 +106,6 @@ public class IvpingController {
             tableView.getSelectionModel().selectFirst();
         }
 
-        //setupSearchFilter();
         setupContextMenu();
         setupKeyboardActions();
         loadIpHistory();
@@ -113,11 +114,11 @@ public class IvpingController {
         ciscoprimeButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.CISCOPRIME_URL));
         zabbixButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.ZABBIX_URL));
         sigmonButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.SIGMON_URL));
+        grafanaButton.setOnAction(_ -> openConfiguredUrl(ConfigKeys.GRAFANA_URL));
     }
     @FXML
     private void onAdvancedSearchClicked() {
         Stage dialog = new Stage();
-        //dialog.setTitle("Filtro Personalizado");
         dialog.setTitle("Pesquisa Avançada");
         dialog.initModality(Modality.WINDOW_MODAL);
         Window owner = tableView.getScene().getWindow();
