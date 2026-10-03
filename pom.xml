@@ -16,6 +16,17 @@
         <junit.version>5.12.1</junit.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Fix CVE-2026-49844 in the Log4j API used transitively by Apache POI. -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>2.25.5</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <dependency>
@@ -72,7 +83,8 @@
             <!--
                 jlink only accepts named modules. Apache POI depends on three
                 automatic modules, so copies of those JARs receive a real
-                module descriptor in target/modules before the image is built.
+                module descriptor in target/modularized-dependencies before
+                the image is built. Both image builders use these copies.
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -87,6 +99,8 @@
                         </goals>
                         <configuration>
                             <includeScope>runtime</includeScope>
+                            <!-- ModiTect supplies these in modularized-dependencies. -->
+                            <excludeArtifactIds>commons-math3,SparseBitSet,curvesapi</excludeArtifactIds>
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                         </configuration>
                     </execution>
@@ -112,7 +126,7 @@
                             <goal>add-module-info</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <outputDirectory>${project.build.directory}/modularized-dependencies</outputDirectory>
                             <overwriteExistingFiles>true</overwriteExistingFiles>
                             <modules>
                                 <module>
@@ -156,6 +170,7 @@
                         </goals>
                         <configuration>
                             <modulePath>
+                                <path>${project.build.directory}/modularized-dependencies</path>
                                 <path>${project.build.directory}/modules</path>
                             </modulePath>
                             <modules>
@@ -190,6 +205,8 @@
                             <launcher>Ivping</launcher>
                             <jlinkZipName>Ivping</jlinkZipName>
                             <jlinkImageName>Ivping</jlinkImageName>
+                            <!-- Prepended to the module path, overriding the original automatic modules. -->
+                            <jmodsPath>${project.build.directory}/modularized-dependencies</jmodsPath>
                             <noManPages>true</noManPages>
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
