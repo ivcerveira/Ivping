@@ -54,6 +54,7 @@ public class IvpingController {
     private static final Logger LOGGER = Logger.getLogger(IvpingController.class.getName());
     private static final String APP_FOLDER = System.getProperty("user.home") + "\\AppData\\Roaming\\Ivping_data";
     private static final int IP_HISTORY_LIMIT = 10;
+    private static final int MAX_PING_HOSTS = 20;
 
     private final ObservableList<HostData> dataList = FXCollections.observableArrayList();
     private final ObservableList<String> ipHistoryList = FXCollections.observableArrayList();
@@ -317,6 +318,23 @@ public class IvpingController {
 
         if (selectedHostData.isEmpty()) {
             showNoHostSelectedWarning();
+            return;
+        }
+
+        if (selectedHostData.size() > MAX_PING_HOSTS) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Limite de Pings");
+            alert.setHeaderText(null);
+            alert.setContentText("É possível executar Ping em no máximo " + MAX_PING_HOSTS
+                    + " hosts por vez. Você selecionou " + selectedHostData.size()
+                    + " hosts. Reduza a seleção e tente novamente.");
+
+            if (tableView.getScene() != null && tableView.getScene().getWindow() != null) {
+                alert.initOwner(tableView.getScene().getWindow());
+                alert.initModality(Modality.WINDOW_MODAL);
+            }
+
+            alert.showAndWait();
             return;
         }
 
