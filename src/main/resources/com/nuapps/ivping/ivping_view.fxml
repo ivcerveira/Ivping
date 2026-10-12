@@ -22,6 +22,24 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<!--        Algumas opções Unicode, sem ícones ou dependências:-->
+<!--        •-->
+<!--        × — limpar/fechar; visualmente mais elegante que X-->
+<!--        •-->
+<!--        ✕ — versão um pouco mais destacada-->
+<!--        •-->
+<!--        ✖ — versão preenchida e mais pesada-->
+<!--        •-->
+<!--        ⌫ — apagar, semelhante à tecla Backspace-->
+<!--        •-->
+<!--        ⌧ — limpar conteúdo de um campo-->
+<!--        •-->
+<!--        ↺ — restaurar/reiniciar-->
+<!--        •-->
+<!--        ⟲ — redefinir pesquisa-->
+<!--        •-->
+<!--        – — remover, embora seja menos intuitivo-->
+
 <BorderPane prefHeight="460.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nuapps.ivping.controller.IvpingController">
     <top>
         <VBox BorderPane.alignment="CENTER">
@@ -50,6 +68,7 @@
                         </accelerator></MenuItem>
                     <MenuItem onAction="#openIvpingDataFolder" text="A_brir pasta 'Ivping_data'" />
                     <MenuItem onAction="#onPingByIpClicked" text="Ping por IP..." />
+                    <MenuItem onAction="#onIpSubnetCalculatorClicked" text="IP Subnet Calculator" />
 
                 </Menu>
                 <Menu text="Aj_uda">
@@ -88,8 +107,7 @@
 <!--                <TextField fx:id="searchTextField" prefWidth="250.0" promptText="Pesquisar..." stylesheets="@my_theme.css" />-->
                 <StackPane prefWidth="250.0" stylesheets="@my_theme.css">
                     <TextField fx:id="txtSearch" maxWidth="Infinity" promptText="Pesquisar..." styleClass="search-text-field" />
-                    <Button focusTraversable="false" mnemonicParsing="false" onAction="#clearTextField"
-                            styleClass="clear-search-button" text="⌧" StackPane.alignment="CENTER_RIGHT">
+                    <Button focusTraversable="false" mnemonicParsing="false" onAction="#clearTextField" styleClass="clear-search-button" text="⌧" StackPane.alignment="CENTER_RIGHT">
                         <StackPane.margin>
                             <Insets right="4.0" />
                         </StackPane.margin>
@@ -147,7 +165,7 @@
         </VBox>
     </top>
     <center>
-        <TableView fx:id="tableView" editable="true" stylesheets="@my_theme.css" BorderPane.alignment="CENTER">
+        <TableView fx:id="tableView" stylesheets="@my_theme.css" BorderPane.alignment="CENTER">
             <columns>
                 <TableColumn fx:id="colHost" text="Hostname" />
                 <TableColumn fx:id="colIp" text="IP Address" />
@@ -159,21 +177,3 @@
         </TableView>
     </center>
 </BorderPane>
-
-<!--        Algumas opções Unicode, sem ícones ou dependências:-->
-<!--        •-->
-<!--        × — limpar/fechar; visualmente mais elegante que X-->
-<!--        •-->
-<!--        ✕ — versão um pouco mais destacada-->
-<!--        •-->
-<!--        ✖ — versão preenchida e mais pesada-->
-<!--        •-->
-<!--        ⌫ — apagar, semelhante à tecla Backspace-->
-<!--        •-->
-<!--        ⌧ — limpar conteúdo de um campo-->
-<!--        •-->
-<!--        ↺ — restaurar/reiniciar-->
-<!--        •-->
-<!--        ⟲ — redefinir pesquisa-->
-<!--        •-->
-<!--        – — remover, embora seja menos intuitivo-->

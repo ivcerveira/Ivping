@@ -11,6 +11,7 @@ import com.nuapps.ivping.constants.ConfigKeys;
 import com.nuapps.ivping.model.HostData;
 import com.nuapps.ivping.service.BrowserService;
 import com.nuapps.ivping.util.AlertUtils;
+import com.nuapps.ivping.util.Ipv4SubnetCalculator;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -582,6 +583,139 @@ public class IvpingController {
             positionIpAddressCaretAtEnd(cmbIpAddress);
         }
         cmbIpAddress.requestFocus();
+    }
+
+    @FXML
+    private void onIpSubnetCalculatorClicked() {
+        Stage dialog = new Stage();
+        dialog.setTitle("IP Subnet Calculator");
+        dialog.initModality(Modality.WINDOW_MODAL);
+        Window owner = tableView.getScene().getWindow();
+        dialog.initOwner(owner);
+
+        ComboBox<String> cmbSubnetMask = new ComboBox<>(FXCollections.observableArrayList(
+                "255.255.255.255/32",
+                "255.255.255.254/31",
+                "255.255.255.252/30",
+                "255.255.255.248/29",
+                "255.255.255.240/28",
+                "255.255.255.224/27",
+                "255.255.255.192/26",
+                "255.255.255.128/25",
+                "255.255.255.0/24",
+                "255.255.254.0/23",
+                "255.255.252.0/22",
+                "255.255.248.0/21",
+                "255.255.240.0/20",
+                "255.255.224.0/19",
+                "255.255.192.0/18",
+                "255.255.128.0/17",
+                "255.255.0.0/16",
+                "255.254.0.0/15",
+                "255.252.0.0/14",
+                "255.248.0.0/13",
+                "255.240.0.0/12",
+                "255.224.0.0/11",
+                "255.192.0.0/10",
+                "255.128.0.0/9",
+                "255.0.0.0/8",
+                "254.0.0.0/7",
+                "252.0.0.0/6",
+                "248.0.0.0/5",
+                "240.0.0.0/4",
+                "224.0.0.0/3",
+                "192.0.0.0/2",
+                "128.0.0.0/1"
+        ));
+        cmbSubnetMask.setPromptText("Selecione a máscara de sub-rede");
+        cmbSubnetMask.setMaxWidth(Double.MAX_VALUE);
+        cmbSubnetMask.setVisibleRowCount(10);
+
+        TextField txtIpAddress = new TextField();
+        txtIpAddress.setPromptText("192.168.0.1");
+
+        Label lblSubnetMask = new Label("Máscara de sub-rede:");
+        lblSubnetMask.setLabelFor(cmbSubnetMask);
+        Label lblIpAddress = new Label("Endereço IPv4:");
+        lblIpAddress.setLabelFor(txtIpAddress);
+
+        Button btnCalculate = new Button("Calcular");
+        Button btnClear = new Button("Limpar");
+        btnCalculate.setPrefWidth(90);
+        btnClear.setPrefWidth(90);
+
+        GridPane results = new GridPane();
+        results.setHgap(12);
+        results.setVgap(8);
+        String[] resultNames = {"Network Address", "Usable Host IP Range", "Broadcast Address",
+                "Total Number of Hosts", "Number of Usable Hosts", "Subnet Mask", "CIDR Notation"};
+        TextField[] resultFields = new TextField[resultNames.length];
+        for (int row = 0; row < resultNames.length; row++) {
+            TextField field = new TextField();
+            field.setEditable(false);
+            field.setPrefWidth(290);
+            Label label = new Label(resultNames[row] + ":");
+            label.setLabelFor(field);
+            results.addRow(row, label, field);
+            resultFields[row] = field;
+        }
+
+        Runnable clearResults = () -> {
+            for (TextField field : resultFields) {
+                field.clear();
+            }
+        };
+        txtIpAddress.textProperty().addListener((_, _, _) -> clearResults.run());
+        cmbSubnetMask.valueProperty().addListener((_, _, _) -> clearResults.run());
+        btnCalculate.setDefaultButton(true);
+        btnCalculate.setOnAction(_ -> {
+            clearResults.run();
+            if (cmbSubnetMask.getValue() == null) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "Selecione a máscara de sub-rede.");
+                alert.setTitle("Máscara de sub-rede obrigatória");
+                alert.setHeaderText(null);
+                alert.initOwner(dialog);
+                alert.showAndWait();
+                cmbSubnetMask.requestFocus();
+                return;
+            }
+            try {
+                int prefix = Integer.parseInt(cmbSubnetMask.getValue().split("/")[1]);
+                Ipv4SubnetCalculator.Result result = Ipv4SubnetCalculator.calculate(txtIpAddress.getText(), prefix);
+                String[] values = {result.networkAddress(), result.usableHostRange(), result.broadcastAddress(),
+                        Long.toString(result.totalHosts()), Long.toString(result.usableHosts()),
+                        result.subnetMask(), result.cidrNotation()};
+                for (int row = 0; row < values.length; row++) {
+                    resultFields[row].setText(values[row]);
+                }
+            } catch (IllegalArgumentException e) {
+                Alert alert = new Alert(Alert.AlertType.WARNING, e.getMessage());
+                alert.setTitle("IP inválido");
+                alert.setHeaderText(null);
+                alert.initOwner(dialog);
+                alert.showAndWait();
+                txtIpAddress.requestFocus();
+            }
+        });
+        btnClear.setOnAction(_ -> {
+            cmbSubnetMask.getSelectionModel().clearSelection();
+            txtIpAddress.clear();
+            clearResults.run();
+            txtIpAddress.requestFocus();
+        });
+
+        HBox buttonBox = new HBox(10, btnCalculate, btnClear);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        VBox root = new VBox(12, lblSubnetMask, cmbSubnetMask, lblIpAddress, txtIpAddress,
+                buttonBox, new Separator(), results);
+        root.setPadding(new Insets(12));
+
+        Scene scene = new Scene(root, 560, 520);
+        dialog.setScene(scene);
+        dialog.setResizable(false);
+        centerStageOnOwner(dialog, owner, scene);
+        dialog.show();
+        txtIpAddress.requestFocus();
     }
 
     private void centerStageOnOwner(Stage stage, Window owner, Scene scene) {
